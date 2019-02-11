@@ -230,14 +230,15 @@ int main(int argc, const char *argv[]) {
 			ImGui::SameLine();
 			ImGui::Checkbox("Open Image Preview", &previewWindowOpened);
 			for (size_t i = 0; i < spellCard.taskSize(); ++i) {
-				char title[20], changeImage[20];
+				char title[20], changeImageButton[20], closeButton[20];
 				ImFormatString(title, IM_ARRAYSIZE(title), "Task %i", i);
-				ImFormatString(changeImage, IM_ARRAYSIZE(changeImage), "Change Image##%i", i);
+				ImFormatString(changeImageButton, IM_ARRAYSIZE(changeImageButton), "Change Image##%i", i);
+				ImFormatString(closeButton, IM_ARRAYSIZE(closeButton), "x##%i", i);
 				if (ImGui::TreeNode(title)) {
 					auto task = spellCard.getTask(i);
 					task->editor();
 					const char *strId = "CHANGE_IMAGE_POPUP";
-					if (ImGui::Button(changeImage)) ImGui::OpenPopup(strId);
+					if (ImGui::Button(changeImageButton)) ImGui::OpenPopup(strId);
 					if (ImGui::BeginPopup(strId)) {
 						for (auto &column : imageSet) {
 							for (auto &item : column) {
@@ -250,8 +251,14 @@ int main(int argc, const char *argv[]) {
 						}
 						ImGui::EndPopup();
 					}
+					if (ImGui::Button(closeButton)) spellCard.removeTask(i);
 					ImGui::TreePop();
 				}
+			}
+			if (ImGui::Button("+")) {
+				auto task = make_shared<LinearTask>();
+				task->setImage(imageSet[1][1]);
+				spellCard.addTask(task);
 			}
 			ImGui::End();
 		}

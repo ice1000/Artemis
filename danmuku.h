@@ -57,6 +57,7 @@ private:
 public:
 	SpellCard() = default;
 	void addTask(shared_ptr<AbstractTask> task);
+	void removeTask(size_t index);
 	shared_ptr<AbstractTask> getTask(size_t index) const;
 	size_t taskSize() const;
 	void draw(double time);

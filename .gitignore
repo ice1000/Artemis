@@ -2,3 +2,4 @@
 cmake-build-debug/
 cmake-vs-debug/
 imgui.ini
+res/Artemis.txt

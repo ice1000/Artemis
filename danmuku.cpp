@@ -38,6 +38,10 @@ void SpellCard::read(FILE *file, CompleteImage *complete) {
 	}
 }
 
+void SpellCard::removeTask(size_t index) {
+	tasks.erase(tasks.begin() + index);
+}
+
 void LinearTask::draw(double time) {
 	if (time > endTime() || time < startTime) return;
 	double percentage = (time - startTime) / stayTime;
