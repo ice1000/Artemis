@@ -172,16 +172,11 @@ int main(int argc, const char *argv[]) {
 	ImVec2 spacing = originalSpacing;
 
 	SpellCard spellCard;
-	auto task0 = std::make_shared<LinearTask>();
-	task0->setImage(imageSet[10][2]);
-	auto task1 = std::make_shared<LinearTask>();
 	{
 		auto *file = fopen(fileName, "r");
-		task1->read(file, &completeImage);
+		spellCard.read(file, &completeImage);
 		fclose(file);
 	}
-	spellCard.addTask(task0);
-	spellCard.addTask(task1);
 
 	double startTime = ImGui::GetTime();
 	double fixedTime = -1;
@@ -285,10 +280,9 @@ int main(int argc, const char *argv[]) {
 
 	{
 		auto *file = fopen(fileName, "w");
-		task1->write(file);
+		spellCard.write(file);
 		fclose(file);
 	}
-
 	CleanupDeviceD3D();
 	DestroyWindow(hwnd);
 	UnregisterClass(wc.lpszClassName, wc.hInstance);

@@ -15,6 +15,11 @@
 
 using std::vector;
 using std::shared_ptr;
+using std::make_shared;
+
+enum TaskType {
+	Linear = 0,
+};
 
 class AbstractTask {
 public:
@@ -23,7 +28,9 @@ public:
 	virtual void editor() = 0;
 	virtual void setImage(const SubImage &newImage) = 0;
 	virtual void write(FILE *file) = 0;
-	virtual void read(FILE *file, CompleteImage* complete) = 0;
+	virtual void read(FILE *file, CompleteImage *complete) = 0;
+	virtual TaskType type() = 0;
+	static shared_ptr<AbstractTask> create(FILE *file);
 };
 
 class LinearTask : public AbstractTask {
@@ -39,7 +46,8 @@ public:
 	void editor() override;
 	void setImage(const SubImage &newImage) override;
 	void write(FILE *file) override;
-	void read(FILE *file, CompleteImage* complete) override;
+	void read(FILE *file, CompleteImage *complete) override;
+	TaskType type() override;
 };
 
 class SpellCard {
@@ -52,6 +60,8 @@ public:
 	shared_ptr<AbstractTask> getTask(size_t index) const;
 	size_t taskSize() const;
 	void draw(double time);
+	void write(FILE *file);
+	void read(FILE *file, CompleteImage *complete);
 };
 
 #endif //ARTEMIS_DANMUKU_H

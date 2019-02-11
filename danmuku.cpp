@@ -20,6 +20,24 @@ size_t SpellCard::taskSize() const {
 	return tasks.size();
 }
 
+void SpellCard::write(FILE *file) {
+	fprintf(file, "%i", tasks.size());
+	for (const auto &task : tasks) {
+		fprintf(file, "\n%i\n", task->type());
+		task->write(file);
+	}
+}
+
+void SpellCard::read(FILE *file, CompleteImage *complete) {
+	size_t taskSize;
+	FSCANF(file, "%i", &taskSize);
+	for (size_t i = 0; i < taskSize; ++i) {
+		auto task = AbstractTask::create(file);
+		task->read(file, complete);
+		addTask(task);
+	}
+}
+
 void LinearTask::draw(double time) {
 	if (time > endTime() || time < startTime) return;
 	double percentage = (time - startTime) / stayTime;
@@ -93,4 +111,17 @@ void LinearTask::read(FILE *file, CompleteImage *complete) {
 	FSCANF(file, "%lf,%lf,", &startTime, &stayTime);
 	FSCANF(file, "%f,%f,%f,%f,", &startScale.x, &startScale.y, &endScale.x, &endScale.y);
 	FSCANF(file, "%f,%f,%f,%f,", &startPos.x, &startPos.y, &endPos.x, &endPos.y);
+}
+
+TaskType LinearTask::type() {
+	return Linear;
+}
+
+shared_ptr<AbstractTask> AbstractTask::create(FILE *file) {
+	TaskType taskType;
+	FSCANF(file, "%i", &taskType);
+	switch (taskType) {
+		case Linear:
+			return make_shared<LinearTask>();
+	}
 }
