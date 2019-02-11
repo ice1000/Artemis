@@ -12,7 +12,9 @@ void Task::draw(double time) {
 	if (time > endTime() || time < startTime) return;
 	double percentage = (time - startTime) / stayTime;
 	ImGui::SetCursorPos((endPos - startPos) * percentage + startPos);
+	auto rotation_start_index = ImGui::BeginRotate();
 	image.draw((endScale - startScale) * percentage + startScale);
+	ImGui::EndRotate((endRotate - startRotate) * percentage + startRotate, rotation_start_index);
 }
 
 double Task::endTime() const {
@@ -44,6 +46,15 @@ void Task::editor() {
 		if (ImGui::SliderFloat2("End", reinterpret_cast<float *>(&endScale), -5, 5)) {
 			if (sync && endScale.x != originalEnd.x) startScale.x = endScale.x;
 			if (sync && endScale.y != originalEnd.y) startScale.y = endScale.y;
+		}
+		ImGui::TreePop();
+	}
+	if (ImGui::TreeNode("Rotating")) {
+		ImGui::SliderFloat("Start", &startRotate, -IM_PI, IM_PI);
+		ImGui::SliderFloat("End", &endRotate, -IM_PI, IM_PI);
+		if (ImGui::Button("Don't rotate")) {
+			startRotate = IM_PI / 2;
+			endRotate = IM_PI / 2;
 		}
 		ImGui::TreePop();
 	}

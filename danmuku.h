@@ -13,7 +13,8 @@ class Task {
 private:
 	SubImage image;
 	ImVec2 startPos, endPos, startScale = ImVec2(1, 1), endScale = ImVec2(1, 1);
-	double startTime = 0, stayTime = 0;
+	double startTime = 0, stayTime = 1;
+	float startRotate = IM_PI / 2, endRotate = IM_PI / 2;
 public:
 	void draw(double time);
 	void editor();

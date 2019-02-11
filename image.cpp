@@ -61,6 +61,29 @@ void ImGui::LineTo(const ImVec2 &delta, const float thickness) {
 	LineTo(delta, ImGui::GetStyle().Colors[ImGuiCol_PlotLines], thickness);
 }
 
-bool ImGui::SliderDouble(const char *label, double *v, double v_min, double v_max, const char *format, double power){
+bool ImGui::SliderDouble(const char *label, double *v, double v_min, double v_max, const char *format, double power) {
 	return SliderScalar(label, ImGuiDataType_Double, v, &v_min, &v_max, format, power);
+}
+
+ImVec2 ImGui::RotationCenter(size_t rotation_start_index) {
+	ImVec2 l{FLT_MAX, FLT_MAX}, u{-FLT_MAX, -FLT_MAX}; // bounds
+
+	const auto &buf = ImGui::GetWindowDrawList()->VtxBuffer;
+	for (size_t i = rotation_start_index; i < buf.Size; i++)
+		l = ImMin(l, buf[i].pos), u = ImMax(u, buf[i].pos);
+
+	return (l + u) / 2; // or use _ClipRectStack?
+}
+
+void ImGui::EndRotate(float rad, size_t rotation_start_index) {
+	EndRotate(rad, rotation_start_index, RotationCenter(rotation_start_index));
+}
+
+void ImGui::EndRotate(float rad, size_t rotation_start_index, ImVec2 center) {
+	float s = ImSin(rad), c = ImCos(rad);
+	center = ImRotate(center, s, c) - center;
+
+	auto &buf = ImGui::GetWindowDrawList()->VtxBuffer;
+	for (size_t i = rotation_start_index; i < buf.Size; i++)
+		buf[i].pos = ImRotate(buf[i].pos, s, c) - center;
 }

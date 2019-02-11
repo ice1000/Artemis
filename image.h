@@ -16,6 +16,10 @@ namespace ImGui {
 	void LineTo(const ImVec2 &delta, const ImVec4 &color, float thickness);
 	void LineTo(const ImVec2 &delta, const float thickness);
 	bool SliderDouble(const char *label, double *v, double v_min, double v_max, const char *format = "%.6lf", double power = 1.0);
+	ImVec2 RotationCenter(size_t rotation_start_index);
+	void EndRotate(float rad, size_t rotation_start_index);
+	void EndRotate(float rad, size_t rotation_start_index, ImVec2 center);
+	inline auto BeginRotate() noexcept { return ImGui::GetWindowDrawList()->VtxBuffer.Size; }
 }
 
 class CompleteImage;
