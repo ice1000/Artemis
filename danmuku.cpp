@@ -9,7 +9,7 @@ void SpellCard::draw(double time) {
 }
 
 void SpellCard::addTask(AbstractTask *task) {
-	tasks.push_back(task);
+	tasks.emplace_back(task);
 }
 
 AbstractTask *SpellCard::getTask(size_t index) const {
@@ -74,5 +74,5 @@ void LinearTask::editor() {
 }
 
 void LinearTask::setImage(const SubImage &newImage) {
-	LinearTask::image = newImage;
+	image = newImage;
 }

@@ -108,7 +108,9 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
-int main(int, char *[]) {
+int main(int argc, const char *argv[]) {
+	const char *fileName = argc >= 2 ? argv[1] : "Artemis.txt";
+
 	// Create application window
 	WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
 	                 _T("Artemis"), NULL};
@@ -144,7 +146,7 @@ int main(int, char *[]) {
 
 	CompleteImage completeImage;
 	CompleteImage::fromFile("res/etama.png", completeImage);
-	SubImage imageSet[16][12];
+	SubImage imageSet[12][16];
 	{
 		ImVec2 pos = ImVec2(0, 0), size = ImVec2(16, 15);
 		for (auto &column : imageSet) {
@@ -177,10 +179,11 @@ int main(int, char *[]) {
 	double fixedTime = -1;
 	double currentTime = startTime;
 	char debugWindowTitle[100];
+	bool previewWindowOpened = false;
 
 	// Main loop
 	MSG msg;
-	ZeroMemory(&msg, sizeof(msg));
+	ZeroMemory(&msg, sizeof msg);
 	while (msg.message != WM_QUIT) {
 		// Poll and handle messages (inputs, window resize, etc.)
 		// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
@@ -200,6 +203,17 @@ int main(int, char *[]) {
 		ImGui::GetStyle().ItemSpacing = originalSpacing;
 		if (fixedTime < 0)
 			currentTime = ImGui::GetTime() - startTime;
+		if (previewWindowOpened && ImGui::Begin("Preview Images", &previewWindowOpened)) {
+			for (auto &column : imageSet) {
+				for (auto &item : column) {
+					item.drawWithBoarder();
+					ImGui::SameLine();
+				}
+				ImGui::NewLine();
+			}
+			ImGui::End();
+		}
+
 		if (ImGui::Begin("Editor")) {
 			ImGui::ColorEdit3("Background Color", reinterpret_cast<float *>(&clearColor));
 			ImGui::SliderFloat2("Item Spacing", reinterpret_cast<float *>(&spacing), -5, 5);
@@ -210,21 +224,32 @@ int main(int, char *[]) {
 				startTime = ImGui::GetTime();
 				fixedTime = -1;
 			}
+			ImGui::SameLine();
+			ImGui::Checkbox("Open Image Preview", &previewWindowOpened);
 			for (size_t i = 0; i < spellCard.taskSize(); ++i) {
-				char title[100];
+				char title[20], changeImage[20];
 				ImFormatString(title, IM_ARRAYSIZE(title), "Task %i", i);
+				ImFormatString(changeImage, IM_ARRAYSIZE(changeImage), "Change Image##%i", i);
 				if (ImGui::TreeNode(title)) {
-					spellCard.getTask(i)->editor();
+					AbstractTask *task = spellCard.getTask(i);
+					task->editor();
+					const char *strId = "CHANGE_IMAGE_POPUP";
+					if (ImGui::Button(changeImage)) ImGui::OpenPopup(strId);
+					if (ImGui::BeginPopup(strId)) {
+						for (auto &column : imageSet) {
+							for (auto &item : column) {
+								// This function does not return true, use IsItemClicked
+								item.drawButton();
+								if (ImGui::IsItemClicked()) task->setImage(item);
+								ImGui::SameLine();
+							}
+							ImGui::NewLine();
+						}
+						ImGui::EndPopup();
+					}
 					ImGui::TreePop();
 				}
 			}
-//			for (auto &column : imageSet) {
-//				for (auto &item : column) {
-//					item.draw();
-//					ImGui::SameLine();
-//				}
-//				ImGui::NewLine();
-//			}
 			ImGui::End();
 		}
 
@@ -234,10 +259,7 @@ int main(int, char *[]) {
 		ImFormatString(debugWindowTitle, IM_ARRAYSIZE(debugWindowTitle), "Fps: %f, Time: %lf###Debug",
 		               ImGui::GetIO().Framerate, currentTime);
 		if (ImGui::Begin(debugWindowTitle)) {
-			auto actualTime = fixedTime > 0 ? fixedTime : currentTime;
-			for (size_t i = 0; i < spellCard.taskSize(); ++i) {
-				spellCard.getTask(i)->draw(actualTime);
-			}
+			spellCard.draw(fixedTime > 0 ? fixedTime : currentTime);
 			ImGui::End();
 		}
 
