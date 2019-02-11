@@ -8,11 +8,11 @@ void SpellCard::draw(double time) {
 	for (auto &task : tasks) task->draw(time);
 }
 
-void SpellCard::addTask(AbstractTask *task) {
+void SpellCard::addTask(shared_ptr<AbstractTask> task) {
 	tasks.emplace_back(task);
 }
 
-AbstractTask *SpellCard::getTask(size_t index) const {
+shared_ptr<AbstractTask> SpellCard::getTask(size_t index) const {
 	return tasks[index];
 }
 

@@ -10,6 +10,10 @@
 #include "image.h"
 
 #include <vector>
+#include <memory>
+
+using std::vector;
+using std::shared_ptr;
 
 class AbstractTask {
 public:
@@ -35,12 +39,12 @@ public:
 
 class SpellCard {
 private:
-	std::vector<AbstractTask *> tasks;
+	vector<shared_ptr<AbstractTask>> tasks;
 
 public:
 	SpellCard() = default;
-	void addTask(AbstractTask *task);
-	AbstractTask *getTask(size_t index) const;
+	void addTask(shared_ptr<AbstractTask> task);
+	shared_ptr<AbstractTask> getTask(size_t index) const;
 	size_t taskSize() const;
 	void draw(double time);
 };

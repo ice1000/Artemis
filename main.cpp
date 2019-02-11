@@ -15,6 +15,10 @@
 #include "image.h"
 #include "danmuku.h"
 
+#include <memory>
+
+using std::shared_ptr;
+
 // Data
 ID3D11Device *g_pd3dDevice = NULL;
 static ID3D11DeviceContext *g_pd3dDeviceContext = NULL;
@@ -168,12 +172,12 @@ int main(int argc, const char *argv[]) {
 	ImVec2 spacing = originalSpacing;
 
 	SpellCard spellCard;
-	LinearTask task0;
-	task0.setImage(imageSet[10][2]);
-	LinearTask task1;
-	task1.setImage(imageSet[10][1]);
-	spellCard.addTask(&task0);
-	spellCard.addTask(&task1);
+	auto task0 = std::make_shared<LinearTask>();
+	task0->setImage(imageSet[10][2]);
+	auto task1 = std::make_shared<LinearTask>();
+	task1->setImage(imageSet[10][1]);
+	spellCard.addTask(task0);
+	spellCard.addTask(task1);
 
 	double startTime = ImGui::GetTime();
 	double fixedTime = -1;
@@ -231,7 +235,7 @@ int main(int argc, const char *argv[]) {
 				ImFormatString(title, IM_ARRAYSIZE(title), "Task %i", i);
 				ImFormatString(changeImage, IM_ARRAYSIZE(changeImage), "Change Image##%i", i);
 				if (ImGui::TreeNode(title)) {
-					AbstractTask *task = spellCard.getTask(i);
+					auto task = spellCard.getTask(i);
 					task->editor();
 					const char *strId = "CHANGE_IMAGE_POPUP";
 					if (ImGui::Button(changeImage)) ImGui::OpenPopup(strId);
