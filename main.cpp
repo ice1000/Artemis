@@ -108,7 +108,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
-int main(int, char **) {
+int main(int, char *[]) {
 	// Create application window
 	WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
 	                 _T("Artemis"), NULL};
@@ -142,21 +142,6 @@ int main(int, char **) {
 	ImGui_ImplWin32_Init(hwnd);
 	ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
 
-	// Load Fonts
-	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-	// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-	// - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-	// - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-	// - Read 'misc/fonts/README.txt' for more instructions and details.
-	// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-	//io.Fonts->AddFontDefault();
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
-	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-	//IM_ASSERT(font != NULL);
-
 	CompleteImage completeImage;
 	CompleteImage::fromFile("res/etama.png", completeImage);
 	SubImage imageSet[16][12];
@@ -180,8 +165,14 @@ int main(int, char **) {
 	ImVec2 originalSpacing = ImGui::GetStyle().ItemSpacing;
 	ImVec2 spacing = originalSpacing;
 
-	Task task;
-	task.setImage(imageSet[10][2]);
+	SpellCard spellCard;
+	LinearTask task0;
+	task0.setImage(imageSet[10][2]);
+	LinearTask task1;
+	task1.setImage(imageSet[10][1]);
+	spellCard.addTask(&task0);
+	spellCard.addTask(&task1);
+
 	double startTime = ImGui::GetTime();
 	double fixedTime = -1;
 	double currentTime = startTime;
@@ -212,14 +203,21 @@ int main(int, char **) {
 		if (ImGui::Begin("Editor")) {
 			ImGui::ColorEdit3("Background Color", reinterpret_cast<float *>(&clearColor));
 			ImGui::SliderFloat2("Item Spacing", reinterpret_cast<float *>(&spacing), -5, 5);
-			if (ImGui::SliderDouble("The World!", &fixedTime, -1, currentTime + 2)) {
+			if (ImGui::SliderDouble("The World!", &fixedTime, -1, currentTime + 1)) {
 				if (fixedTime < 0) fixedTime = 0;
 			}
 			if (ImGui::Button("Play")) {
 				startTime = ImGui::GetTime();
 				fixedTime = -1;
 			}
-			task.editor();
+			for (size_t i = 0; i < spellCard.taskSize(); ++i) {
+				char title[100];
+				ImFormatString(title, IM_ARRAYSIZE(title), "Task %i", i);
+				if (ImGui::TreeNode(title)) {
+					spellCard.getTask(i)->editor();
+					ImGui::TreePop();
+				}
+			}
 //			for (auto &column : imageSet) {
 //				for (auto &item : column) {
 //					item.draw();
@@ -236,7 +234,10 @@ int main(int, char **) {
 		ImFormatString(debugWindowTitle, IM_ARRAYSIZE(debugWindowTitle), "Fps: %f, Time: %lf###Debug",
 		               ImGui::GetIO().Framerate, currentTime);
 		if (ImGui::Begin(debugWindowTitle)) {
-			task.draw(fixedTime > 0 ? fixedTime : currentTime);
+			auto actualTime = fixedTime > 0 ? fixedTime : currentTime;
+			for (size_t i = 0; i < spellCard.taskSize(); ++i) {
+				spellCard.getTask(i)->draw(actualTime);
+			}
 			ImGui::End();
 		}
 
