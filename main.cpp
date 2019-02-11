@@ -159,7 +159,7 @@ int main(int, char **) {
 
 	CompleteImage completeImage;
 	CompleteImage::fromFile("res/etama.png", completeImage);
-	SubImage imageSet[16][16];
+	SubImage imageSet[16][12];
 	{
 		ImVec2 pos = ImVec2(0, 0), size = ImVec2(16, 15);
 		for (auto &column : imageSet) {
@@ -176,7 +176,7 @@ int main(int, char **) {
 		}
 	}
 
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	ImVec4 clearColor = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	ImVec2 originalSpacing = ImGui::GetStyle().ItemSpacing;
 	ImVec2 spacing = originalSpacing;
 
@@ -206,7 +206,7 @@ int main(int, char **) {
 
 		ImGui::GetStyle().ItemSpacing = originalSpacing;
 		if (ImGui::Begin("Editor")) {
-			ImGui::ColorEdit3("Background Color", reinterpret_cast<float *>(&clear_color));
+			ImGui::ColorEdit3("Background Color", reinterpret_cast<float *>(&clearColor));
 			ImGui::SliderFloat2("Item Spacing", reinterpret_cast<float *>(&spacing), -5, 5);
 			if (ImGui::Button("Play")) {
 				startTime = ImGui::GetTime();
@@ -214,7 +214,6 @@ int main(int, char **) {
 			task.editor();
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
 			            ImGui::GetIO().Framerate);
-			ImGui::End();
 //			for (auto &column : imageSet) {
 //				for (auto &item : column) {
 //					item.draw();
@@ -222,6 +221,7 @@ int main(int, char **) {
 //				}
 //				ImGui::NewLine();
 //			}
+			ImGui::End();
 		}
 
 		ImGui::GetStyle().ItemSpacing = spacing;
@@ -236,7 +236,7 @@ int main(int, char **) {
 
 		ImGui::Render();
 		g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, NULL);
-		g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, (float *) &clear_color);
+		g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, (float *) &clearColor);
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 		g_pSwapChain->Present(1, 0);

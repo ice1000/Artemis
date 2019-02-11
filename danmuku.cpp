@@ -21,7 +21,7 @@ double Task::endTime() const {
 
 void Task::editor() {
 	bool sync = ImGui::GetIO().KeyAlt;
-	if (ImGui::TreeNode("Position")) {
+	if (ImGui::TreeNode("Positioning")) {
 		ImVec2 originalStart = startPos;
 		if (ImGui::SliderFloat2("Start", reinterpret_cast<float *>(&startPos), 0, 300)) {
 			if (sync && startPos.x != originalStart.x) endPos.x = startPos.x;
@@ -34,7 +34,7 @@ void Task::editor() {
 		}
 		ImGui::TreePop();
 	}
-	if (ImGui::TreeNode("Scale")) {
+	if (ImGui::TreeNode("Scaling")) {
 		ImVec2 originalStart = startScale;
 		if (ImGui::SliderFloat2("Start", reinterpret_cast<float *>(&startScale), -5, 5)) {
 			if (sync && startScale.x != originalStart.x) endScale.x = startScale.x;
@@ -47,8 +47,11 @@ void Task::editor() {
 		}
 		ImGui::TreePop();
 	}
-	ImGui::SliderDouble("Task Start Time", &startTime, 0, 10);
-	ImGui::SliderDouble("Task Stay Time", &stayTime, 0, 10);
+	if (ImGui::TreeNode("Timing")) {
+		ImGui::SliderDouble("Task Start Time", &startTime, 0, 10);
+		ImGui::SliderDouble("Task Stay Time", &stayTime, 0, 10);
+		ImGui::TreePop();
+	}
 }
 
 void Task::setImage(const SubImage &newImage) {
