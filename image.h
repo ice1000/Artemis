@@ -11,6 +11,12 @@
 #include "imgui_internal.h"
 #include "texture.h"
 
+#ifdef WIN32
+#define FSCANF fscanf_s
+#else
+#define FSCANF fscanf
+#endif
+
 namespace ImGui {
 	void LineTo(const ImVec2 &offset, const ImVec2 &delta, const ImVec4 &color, float thickness);
 	void LineTo(const ImVec2 &delta, const ImVec4 &color, float thickness);
@@ -40,6 +46,8 @@ public:
 	void draw(const ImVec2 &scale = ImVec2(1, 1));
 	bool drawButton(const ImVec2 &scale = ImVec2(1, 1));
 	void drawWithBoarder(const ImVec2 &scale = ImVec2(1, 1));
+	void write(FILE *file);
+	void read(FILE *file, CompleteImage* complete);
 };
 
 class CompleteImage {

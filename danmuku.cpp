@@ -76,3 +76,21 @@ void LinearTask::editor() {
 void LinearTask::setImage(const SubImage &newImage) {
 	image = newImage;
 }
+
+void LinearTask::write(FILE *file) {
+	image.write(file);
+	fprintf(file, "%f,%f,", startRotate, endRotate);
+	fprintf(file, "%lf,%lf,", startTime, stayTime);
+	fprintf(file, "%f,%f,%f,%f,", startScale.x, startScale.y, endScale.x, endScale.y);
+	fprintf(file, "%f,%f,%f,%f,", startPos.x, startPos.y, endPos.x, endPos.y);
+	fputs("", file);
+	fflush(file);
+}
+
+void LinearTask::read(FILE *file, CompleteImage *complete) {
+	image.read(file, complete);
+	FSCANF(file, "%f,%f,", &startRotate, &endRotate);
+	FSCANF(file, "%lf,%lf,", &startTime, &stayTime);
+	FSCANF(file, "%f,%f,%f,%f,", &startScale.x, &startScale.y, &endScale.x, &endScale.y);
+	FSCANF(file, "%f,%f,%f,%f,", &startPos.x, &startPos.y, &endPos.x, &endPos.y);
+}

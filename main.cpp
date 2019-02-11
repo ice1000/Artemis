@@ -113,7 +113,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 }
 
 int main(int argc, const char *argv[]) {
-	const char *fileName = argc >= 2 ? argv[1] : "Artemis.txt";
+	const char *fileName = argc >= 2 ? argv[1] : "res/Artemis.txt";
 
 	// Create application window
 	WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
@@ -175,7 +175,11 @@ int main(int argc, const char *argv[]) {
 	auto task0 = std::make_shared<LinearTask>();
 	task0->setImage(imageSet[10][2]);
 	auto task1 = std::make_shared<LinearTask>();
-	task1->setImage(imageSet[10][1]);
+	{
+		auto *file = fopen(fileName, "r");
+		task1->read(file, &completeImage);
+		fclose(file);
+	}
 	spellCard.addTask(task0);
 	spellCard.addTask(task1);
 
@@ -261,7 +265,7 @@ int main(int argc, const char *argv[]) {
 		ImGui::SetNextWindowBgAlpha(.5f);
 
 		ImFormatString(debugWindowTitle, IM_ARRAYSIZE(debugWindowTitle), "Fps: %f, Time: %lf###Debug",
-		               ImGui::GetIO().Framerate, currentTime);
+		               io.Framerate, currentTime);
 		if (ImGui::Begin(debugWindowTitle)) {
 			spellCard.draw(fixedTime > 0 ? fixedTime : currentTime);
 			ImGui::End();
@@ -278,6 +282,12 @@ int main(int argc, const char *argv[]) {
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+
+	{
+		auto *file = fopen(fileName, "w");
+		task1->write(file);
+		fclose(file);
+	}
 
 	CleanupDeviceD3D();
 	DestroyWindow(hwnd);

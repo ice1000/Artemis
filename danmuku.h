@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <memory>
+#include <cstdio>
 
 using std::vector;
 using std::shared_ptr;
@@ -21,6 +22,8 @@ public:
 	virtual void draw(double time) = 0;
 	virtual void editor() = 0;
 	virtual void setImage(const SubImage &newImage) = 0;
+	virtual void write(FILE *file) = 0;
+	virtual void read(FILE *file, CompleteImage* complete) = 0;
 };
 
 class LinearTask : public AbstractTask {
@@ -35,6 +38,8 @@ public:
 	void draw(double time) override;
 	void editor() override;
 	void setImage(const SubImage &newImage) override;
+	void write(FILE *file) override;
+	void read(FILE *file, CompleteImage* complete) override;
 };
 
 class SpellCard {

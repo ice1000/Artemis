@@ -33,6 +33,17 @@ SubImage::SubImage(const CompleteImage *completeImage) : completeImage(completeI
 	size = completeImage->fullSize;
 }
 
+void SubImage::write(FILE *file) {
+	fprintf(file, "%f,%f,", pos.x, pos.y);
+	fprintf(file, "%f,%f,", size.x, size.y);
+}
+
+void SubImage::read(FILE *file, CompleteImage *complete) {
+	this->completeImage = complete;
+	FSCANF(file, "%f,%f,", &pos.x, &pos.y);
+	FSCANF(file, "%f,%f,", &size.x, &size.y);
+}
+
 bool CompleteImage::fromFile(const char *fileName, CompleteImage &subimage) {
 	ImTextureID t;
 	size_t w, h;
