@@ -23,45 +23,41 @@ double Task::endTime() const {
 
 void Task::editor() {
 	bool sync = ImGui::GetIO().KeyAlt;
-	if (ImGui::TreeNode("Positioning")) {
+	if (ImGui::CollapsingHeader("Positioning")) {
 		ImVec2 originalStart = startPos;
-		if (ImGui::SliderFloat2("Start", reinterpret_cast<float *>(&startPos), 0, 300)) {
+		if (ImGui::SliderFloat2("Start##Pos", reinterpret_cast<float *>(&startPos), 0, 300)) {
 			if (sync && startPos.x != originalStart.x) endPos.x = startPos.x;
 			if (sync && startPos.y != originalStart.y) endPos.y = startPos.y;
 		}
 		ImVec2 originalEnd = endPos;
-		if (ImGui::SliderFloat2("End", reinterpret_cast<float *>(&endPos), 0, 300)) {
+		if (ImGui::SliderFloat2("End##Pos", reinterpret_cast<float *>(&endPos), 0, 300)) {
 			if (sync && endPos.x != originalEnd.x) startPos.x = endPos.x;
 			if (sync && endPos.y != originalEnd.y) startPos.y = endPos.y;
 		}
-		ImGui::TreePop();
 	}
-	if (ImGui::TreeNode("Scaling")) {
+	if (ImGui::CollapsingHeader("Scaling")) {
 		ImVec2 originalStart = startScale;
-		if (ImGui::SliderFloat2("Start", reinterpret_cast<float *>(&startScale), -5, 5)) {
+		if (ImGui::SliderFloat2("Start##Scale", reinterpret_cast<float *>(&startScale), -5, 5)) {
 			if (sync && startScale.x != originalStart.x) endScale.x = startScale.x;
 			if (sync && startScale.y != originalStart.y) endScale.y = startScale.y;
 		}
 		ImVec2 originalEnd = endScale;
-		if (ImGui::SliderFloat2("End", reinterpret_cast<float *>(&endScale), -5, 5)) {
+		if (ImGui::SliderFloat2("End##Scale", reinterpret_cast<float *>(&endScale), -5, 5)) {
 			if (sync && endScale.x != originalEnd.x) startScale.x = endScale.x;
 			if (sync && endScale.y != originalEnd.y) startScale.y = endScale.y;
 		}
-		ImGui::TreePop();
 	}
-	if (ImGui::TreeNode("Rotating")) {
-		ImGui::SliderFloat("Start", &startRotate, -IM_PI, IM_PI);
-		ImGui::SliderFloat("End", &endRotate, -IM_PI, IM_PI);
+	if (ImGui::CollapsingHeader("Rotating")) {
+		ImGui::SliderFloat("Start##Rotate", &startRotate, -IM_PI, IM_PI);
+		ImGui::SliderFloat("End##Rotate", &endRotate, -IM_PI, IM_PI);
 		if (ImGui::Button("Don't rotate")) {
 			startRotate = IM_PI / 2;
 			endRotate = IM_PI / 2;
 		}
-		ImGui::TreePop();
 	}
-	if (ImGui::TreeNode("Timing")) {
+	if (ImGui::CollapsingHeader("Timing")) {
 		ImGui::SliderDouble("Task Start Time", &startTime, 0, 10);
 		ImGui::SliderDouble("Task Stay Time", &stayTime, 0, 10);
-		ImGui::TreePop();
 	}
 }
 

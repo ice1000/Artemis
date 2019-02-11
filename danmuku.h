@@ -9,6 +9,9 @@
 #include "texture.h"
 #include "image.h"
 
+class Animation {
+};
+
 class Task {
 private:
 	SubImage image;

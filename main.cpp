@@ -181,8 +181,10 @@ int main(int, char **) {
 	ImVec2 spacing = originalSpacing;
 
 	Task task;
-	task.setImage(imageSet[1][1]);
+	task.setImage(imageSet[10][2]);
 	double startTime = ImGui::GetTime();
+	double fixedTime = -1;
+	double currentTime = startTime;
 	char debugWindowTitle[100];
 
 	// Main loop
@@ -205,15 +207,19 @@ int main(int, char **) {
 		ImGui::NewFrame();
 
 		ImGui::GetStyle().ItemSpacing = originalSpacing;
+		if (fixedTime < 0)
+			currentTime = ImGui::GetTime() - startTime;
 		if (ImGui::Begin("Editor")) {
 			ImGui::ColorEdit3("Background Color", reinterpret_cast<float *>(&clearColor));
 			ImGui::SliderFloat2("Item Spacing", reinterpret_cast<float *>(&spacing), -5, 5);
+			if (ImGui::SliderDouble("The World!", &fixedTime, -1, currentTime + 2)) {
+				if (fixedTime < 0) fixedTime = 0;
+			}
 			if (ImGui::Button("Play")) {
 				startTime = ImGui::GetTime();
+				fixedTime = -1;
 			}
 			task.editor();
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
-			            ImGui::GetIO().Framerate);
 //			for (auto &column : imageSet) {
 //				for (auto &item : column) {
 //					item.draw();
@@ -227,10 +233,10 @@ int main(int, char **) {
 		ImGui::GetStyle().ItemSpacing = spacing;
 		ImGui::SetNextWindowBgAlpha(.5f);
 
-		double time = ImGui::GetTime() - startTime;
-		ImFormatString(debugWindowTitle, IM_ARRAYSIZE(debugWindowTitle), "Time: %lf###Debug", time);
+		ImFormatString(debugWindowTitle, IM_ARRAYSIZE(debugWindowTitle), "Fps: %f, Time: %lf###Debug",
+		               ImGui::GetIO().Framerate, currentTime);
 		if (ImGui::Begin(debugWindowTitle)) {
-			task.draw(time);
+			task.draw(fixedTime > 0 ? fixedTime : currentTime);
 			ImGui::End();
 		}
 
