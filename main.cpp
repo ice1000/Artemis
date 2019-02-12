@@ -248,7 +248,7 @@ int main(int argc, const char *argv[]) {
 							for (auto &item : column) {
 								// This function does not return true, use IsItemClicked
 								item.drawButton();
-								if (ImGui::IsItemClicked()) task->setImage(item);
+								if (ImGui::IsItemClicked()) task->image = item;
 								ImGui::SameLine();
 							}
 							ImGui::NewLine();
@@ -261,7 +261,7 @@ int main(int argc, const char *argv[]) {
 			}
 			if (ImGui::Button("+")) {
 				auto task = make_shared<LinearTask>();
-				task->setImage(imageSet[1][1]);
+				task->image = imageSet[1][1];
 				spellCard.addTask(task);
 			}
 			ImGui::End();

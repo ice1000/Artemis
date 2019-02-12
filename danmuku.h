@@ -22,30 +22,34 @@ enum TaskType {
 };
 
 class AbstractTask {
+private:
 public:
-	bool isSelected = false;
 	virtual ~AbstractTask() = default;
-	virtual void draw(double time) = 0;
+
+	SubImage image;
+	bool isSelected = false;
+
+	void draw(double time);
+
+	virtual void drawWithoutRotate(double time) = 0;
 	virtual void editor() = 0;
-	virtual void setImage(const SubImage &newImage) = 0;
 	virtual void write(FILE *file) = 0;
 	virtual void read(FILE *file, CompleteImage *complete) = 0;
+	virtual ImVec2 calcPos(double time) = 0;
 	virtual TaskType type() = 0;
 	static shared_ptr<AbstractTask> create(FILE *file);
 };
 
 class LinearTask : public AbstractTask {
 private:
-	SubImage image;
 	ImVec2 startPos, endPos, startScale = ImVec2(1, 1), endScale = ImVec2(1, 1);
 	double startTime = 0, stayTime = 1;
-	float startRotate = IM_PI / 2, endRotate = IM_PI / 2;
 	double endTime() const;
 public:
 	~LinearTask() override = default;
-	void draw(double time) override;
+	ImVec2 calcPos(double time) override;
+	void drawWithoutRotate(double time) override;
 	void editor() override;
-	void setImage(const SubImage &newImage) override;
 	void write(FILE *file) override;
 	void read(FILE *file, CompleteImage *complete) override;
 	TaskType type() override;

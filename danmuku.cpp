@@ -5,7 +5,7 @@
 #include "danmuku.h"
 
 void SpellCard::draw(double time) {
-	AbstractTask* selected = nullptr;
+	AbstractTask *selected = nullptr;
 	// Explicit typed to make CLion happy
 	for (shared_ptr<AbstractTask> &task : tasks) {
 		task->draw(time);
@@ -54,16 +54,12 @@ void SpellCard::removeTask(size_t index) {
 	tasks.erase(tasks.begin() + index);
 }
 
-void LinearTask::draw(double time) {
+void LinearTask::drawWithoutRotate(double time) {
 	if (time > endTime() || time < startTime) return;
-	double percentage = (time - startTime) / stayTime;
-	auto percentage_f = static_cast<float>(percentage);
-	ImGui::SetCursorPos((endPos - startPos) * percentage_f + startPos);
-	auto rotation_start_index = ImGui::BeginRotate();
-	const ImVec2 &scale = (endScale - startScale) * percentage_f + startScale;
+	auto percentage = static_cast<float>((time - startTime) / stayTime);
+	const ImVec2 &scale = (endScale - startScale) * percentage + startScale;
 	if (isSelected) image.drawWithBoarder(scale);
 	else image.draw(scale);
-	ImGui::EndRotate((endRotate - startRotate) * percentage_f + startRotate, rotation_start_index);
 }
 
 double LinearTask::endTime() const {
@@ -96,27 +92,14 @@ void LinearTask::editor() {
 			if (sync && endScale.y != originalEnd.y) startScale.y = endScale.y;
 		}
 	}
-	if (ImGui::CollapsingHeader("Rotating")) {
-		ImGui::SliderFloat("Start##Rotate", &startRotate, -IM_PI, IM_PI);
-		ImGui::SliderFloat("End##Rotate", &endRotate, -IM_PI, IM_PI);
-		if (ImGui::Button("Don't rotate")) {
-			startRotate = IM_PI / 2;
-			endRotate = IM_PI / 2;
-		}
-	}
 	if (ImGui::CollapsingHeader("Timing")) {
 		ImGui::SliderDouble("Task Start Time", &startTime, 0, 5);
 		ImGui::SliderDouble("Task Stay Time", &stayTime, 0, 5);
 	}
 }
 
-void LinearTask::setImage(const SubImage &newImage) {
-	image = newImage;
-}
-
 void LinearTask::write(FILE *file) {
 	image.write(file);
-	fprintf(file, "%f,%f,", startRotate, endRotate);
 	fprintf(file, "%lf,%lf,", startTime, stayTime);
 	fprintf(file, "%f,%f,%f,%f,", startScale.x, startScale.y, endScale.x, endScale.y);
 	fprintf(file, "%f,%f,%f,%f,", startPos.x, startPos.y, endPos.x, endPos.y);
@@ -126,7 +109,6 @@ void LinearTask::write(FILE *file) {
 
 void LinearTask::read(FILE *file, CompleteImage *complete) {
 	image.read(file, complete);
-	FSCANF(file, "%f,%f,", &startRotate, &endRotate);
 	FSCANF(file, "%lf,%lf,", &startTime, &stayTime);
 	FSCANF(file, "%f,%f,%f,%f,", &startScale.x, &startScale.y, &endScale.x, &endScale.y);
 	FSCANF(file, "%f,%f,%f,%f,", &startPos.x, &startPos.y, &endPos.x, &endPos.y);
@@ -134,6 +116,11 @@ void LinearTask::read(FILE *file, CompleteImage *complete) {
 
 TaskType LinearTask::type() {
 	return Linear;
+}
+
+ImVec2 LinearTask::calcPos(double time) {
+	auto percentage = static_cast<float>((time - startTime) / stayTime);
+	return (endPos - startPos) * percentage + startPos;
 }
 
 shared_ptr<AbstractTask> AbstractTask::create(FILE *file) {
@@ -146,4 +133,15 @@ shared_ptr<AbstractTask> AbstractTask::create(FILE *file) {
 			fprintf(stderr, "Unrecognized task type: %i", taskType);
 			exit(-1);
 	}
+}
+
+void AbstractTask::draw(double time) {
+	auto rotation_start_index = ImGui::BeginRotate();
+	const ImVec2 &currentPos = calcPos(time);
+	const ImVec2 &previousPos = calcPos(time - 0.0001);
+	ImGui::SetCursorPos(currentPos);
+	const ImVec2 &dir = currentPos - previousPos;
+	float rotation = atan(-dir.y / dir.x);
+	drawWithoutRotate(time);
+	ImGui::EndRotate(rotation, rotation_start_index);
 }
