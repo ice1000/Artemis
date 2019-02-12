@@ -23,6 +23,7 @@ enum TaskType {
 
 class AbstractTask {
 public:
+	bool isSelected = false;
 	virtual ~AbstractTask() = default;
 	virtual void draw(double time) = 0;
 	virtual void editor() = 0;

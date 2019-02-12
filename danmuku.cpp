@@ -5,7 +5,19 @@
 #include "danmuku.h"
 
 void SpellCard::draw(double time) {
-	for (auto &task : tasks) task->draw(time);
+	AbstractTask* selected = nullptr;
+	// Explicit typed to make CLion happy
+	for (shared_ptr<AbstractTask> &task : tasks) {
+		task->draw(time);
+		if (ImGui::IsItemClicked()) {
+			if (ImGui::GetIO().KeyCtrl) task->isSelected = true;
+			else selected = task.get();
+		}
+	}
+	if (selected) {
+		for (auto &task : tasks) task->isSelected = false;
+		selected->isSelected = true;
+	}
 }
 
 void SpellCard::addTask(shared_ptr<AbstractTask> task) {
@@ -48,7 +60,9 @@ void LinearTask::draw(double time) {
 	auto percentage_f = static_cast<float>(percentage);
 	ImGui::SetCursorPos((endPos - startPos) * percentage_f + startPos);
 	auto rotation_start_index = ImGui::BeginRotate();
-	image.draw((endScale - startScale) * percentage_f + startScale);
+	const ImVec2 &scale = (endScale - startScale) * percentage_f + startScale;
+	if (isSelected) image.drawWithBoarder(scale);
+	else image.draw(scale);
 	ImGui::EndRotate((endRotate - startRotate) * percentage_f + startRotate, rotation_start_index);
 }
 

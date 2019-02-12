@@ -112,6 +112,8 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
+const char *CHANGE_IMAGE_POPUP = "CHANGE_IMAGE_POPUP";
+
 int main(int argc, const char *argv[]) {
 	const char *fileName = argc >= 2 ? argv[1] : "res/Artemis.txt";
 
@@ -230,16 +232,18 @@ int main(int argc, const char *argv[]) {
 			ImGui::SameLine();
 			ImGui::Checkbox("Open Image Preview", &previewWindowOpened);
 			for (size_t i = 0; i < spellCard.taskSize(); ++i) {
-				char title[20], changeImageButton[20], closeButton[20];
+				char title[20], popupId[20], changeImageButton[20], closeButton[20];
 				ImFormatString(title, IM_ARRAYSIZE(title), "Task %i", i);
+				ImFormatString(popupId, IM_ARRAYSIZE(popupId), "Popup %i", i);
 				ImFormatString(changeImageButton, IM_ARRAYSIZE(changeImageButton), "Change Image##%i", i);
 				ImFormatString(closeButton, IM_ARRAYSIZE(closeButton), "x##%i", i);
-				if (ImGui::TreeNode(title)) {
-					auto task = spellCard.getTask(i);
+				auto task = spellCard.getTask(i);
+				ImGui::Selectable(title, &task->isSelected);
+				if (ImGui::IsItemClicked(1)) ImGui::OpenPopup(popupId);
+				if (ImGui::BeginPopup(popupId)) {
 					task->editor();
-					const char *strId = "CHANGE_IMAGE_POPUP";
-					if (ImGui::Button(changeImageButton)) ImGui::OpenPopup(strId);
-					if (ImGui::BeginPopup(strId)) {
+					if (ImGui::Button(changeImageButton)) ImGui::OpenPopup(CHANGE_IMAGE_POPUP);
+					if (ImGui::BeginPopup(CHANGE_IMAGE_POPUP)) {
 						for (auto &column : imageSet) {
 							for (auto &item : column) {
 								// This function does not return true, use IsItemClicked
@@ -252,7 +256,7 @@ int main(int argc, const char *argv[]) {
 						ImGui::EndPopup();
 					}
 					if (ImGui::Button(closeButton)) spellCard.removeTask(i);
-					ImGui::TreePop();
+					ImGui::EndPopup();
 				}
 			}
 			if (ImGui::Button("+")) {
