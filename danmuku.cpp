@@ -45,10 +45,11 @@ void SpellCard::removeTask(size_t index) {
 void LinearTask::draw(double time) {
 	if (time > endTime() || time < startTime) return;
 	double percentage = (time - startTime) / stayTime;
-	ImGui::SetCursorPos((endPos - startPos) * percentage + startPos);
+	auto percentage_f = static_cast<float>(percentage);
+	ImGui::SetCursorPos((endPos - startPos) * percentage_f + startPos);
 	auto rotation_start_index = ImGui::BeginRotate();
-	image.draw((endScale - startScale) * percentage + startScale);
-	ImGui::EndRotate((endRotate - startRotate) * percentage + startRotate, rotation_start_index);
+	image.draw((endScale - startScale) * percentage_f + startScale);
+	ImGui::EndRotate((endRotate - startRotate) * percentage_f + startRotate, rotation_start_index);
 }
 
 double LinearTask::endTime() const {
@@ -127,5 +128,8 @@ shared_ptr<AbstractTask> AbstractTask::create(FILE *file) {
 	switch (taskType) {
 		case Linear:
 			return make_shared<LinearTask>();
+		default:
+			fprintf(stderr, "Unrecognized task type: %i", taskType);
+			exit(-1);
 	}
 }
