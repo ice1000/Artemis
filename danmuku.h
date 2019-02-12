@@ -32,6 +32,7 @@ public:
 	void draw(double time);
 
 	virtual void drawWithoutRotate(double time) = 0;
+	virtual void drawOthers();
 	virtual void editor() = 0;
 	virtual void write(FILE *file) = 0;
 	virtual void read(FILE *file, CompleteImage *complete) = 0;
@@ -43,12 +44,14 @@ public:
 class LinearTask : public AbstractTask {
 private:
 	ImVec2 startPos, endPos, startScale = ImVec2(1, 1), endScale = ImVec2(1, 1);
+	bool showPath = false;
 	double startTime = 0, stayTime = 1;
 	double endTime() const;
 public:
 	~LinearTask() override = default;
 	ImVec2 calcPos(double time) override;
 	void drawWithoutRotate(double time) override;
+	void drawOthers() override;
 	void editor() override;
 	void write(FILE *file) override;
 	void read(FILE *file, CompleteImage *complete) override;

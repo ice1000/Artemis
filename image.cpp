@@ -58,7 +58,7 @@ SubImage CompleteImage::toSubImage() const {
 	return SubImage(this);
 }
 
-void ImGui::LineTo(const ImVec2 &offset, const ImVec2 &delta, const ImVec4 &color, float thickness) {
+void ImGui::Line(const ImVec2 &offset, const ImVec2 &delta, const ImVec4 &color, float thickness) {
 	ImGuiWindow *window = GImGui->CurrentWindow;
 	if (window->SkipItems) return;
 	auto &&cursorPos = window->DC.CursorPos + offset;
@@ -68,12 +68,12 @@ void ImGui::LineTo(const ImVec2 &offset, const ImVec2 &delta, const ImVec4 &colo
 	window->DrawList->AddLine(bb.Min, bb.Max, GetColorU32(color), thickness);
 }
 
-void ImGui::LineTo(const ImVec2 &delta, const ImVec4 &color, float thickness) {
-	LineTo({}, delta, color, thickness);
+void ImGui::Line(const ImVec2 &delta, const ImVec4 &color, float thickness) {
+	Line({}, delta, color, thickness);
 }
 
-void ImGui::LineTo(const ImVec2 &delta, const float thickness) {
-	LineTo(delta, ImGui::GetStyle().Colors[ImGuiCol_PlotLines], thickness);
+void ImGui::Line(const ImVec2 &delta, const float thickness) {
+	Line(delta, ImGui::GetStyle().Colors[ImGuiCol_PlotLines], thickness);
 }
 
 bool ImGui::SliderDouble(const char *label, double *v, double v_min, double v_max, const char *format, double power) {
@@ -84,7 +84,7 @@ ImVec2 ImGui::RotationCenter(size_t rotation_start_index) {
 	ImVec2 l{FLT_MAX, FLT_MAX}, u{-FLT_MAX, -FLT_MAX}; // bounds
 
 	const auto &buf = ImGui::GetWindowDrawList()->VtxBuffer;
-	for (size_t i = rotation_start_index; i < buf.Size; i++)
+	for (int i = rotation_start_index; i < buf.Size; i++)
 		l = ImMin(l, buf[i].pos), u = ImMax(u, buf[i].pos);
 
 	return (l + u) / 2; // or use _ClipRectStack?
@@ -99,6 +99,6 @@ void ImGui::EndRotate(float rad, size_t rotation_start_index, ImVec2 center) {
 	center = ImRotate(center, s, c) - center;
 
 	auto &buf = ImGui::GetWindowDrawList()->VtxBuffer;
-	for (size_t i = rotation_start_index; i < buf.Size; i++)
+	for (int i = rotation_start_index; i < buf.Size; i++)
 		buf[i].pos = ImRotate(buf[i].pos, s, c) - center;
 }

@@ -67,6 +67,7 @@ double LinearTask::endTime() const {
 }
 
 void LinearTask::editor() {
+	ImGui::Checkbox("Show Path", &showPath);
 	bool sync = ImGui::GetIO().KeyAlt;
 	if (ImGui::CollapsingHeader("Positioning")) {
 		ImVec2 originalStart = startPos;
@@ -123,6 +124,16 @@ ImVec2 LinearTask::calcPos(double time) {
 	return (endPos - startPos) * percentage + startPos;
 }
 
+void LinearTask::drawOthers() {
+	if (showPath) {
+		ImGui::SetCursorPos({});
+		ImVec2 &&delta = endPos - startPos;
+		ImVec2 offset = startPos;
+		const ImVec2 &halfSize = image.size / 2;
+		ImGui::Line(offset + halfSize, delta + halfSize, ImVec4(1, 0, 0, 1), 2);
+	}
+}
+
 shared_ptr<AbstractTask> AbstractTask::create(FILE *file) {
 	TaskType taskType;
 	FSCANF(file, "%i", &taskType);
@@ -144,4 +155,7 @@ void AbstractTask::draw(double time) {
 	float rotation = atan(-dir.y / dir.x);
 	drawWithoutRotate(time);
 	ImGui::EndRotate(rotation, rotation_start_index);
+	drawOthers();
 }
+
+void AbstractTask::drawOthers() {}

@@ -18,9 +18,10 @@
 #endif
 
 namespace ImGui {
-	void LineTo(const ImVec2 &offset, const ImVec2 &delta, const ImVec4 &color, float thickness);
-	void LineTo(const ImVec2 &delta, const ImVec4 &color, float thickness);
-	void LineTo(const ImVec2 &delta, const float thickness);
+	void Line(const ImVec2 &offset, const ImVec2 &delta, const ImVec4 &color, float thickness);
+	void LineFromTo(const ImVec2 &from, const ImVec2 &to, float thickness, const ImVec4 &color);
+	void Line(const ImVec2 &delta, const ImVec4 &color, float thickness);
+	void Line(const ImVec2 &delta, const float thickness);
 	bool SliderDouble(const char *label, double *v, double v_min, double v_max, const char *format = "%.6lf", double power = 1.0);
 	ImVec2 RotationCenter(size_t rotation_start_index);
 	void EndRotate(float rad, size_t rotation_start_index);
