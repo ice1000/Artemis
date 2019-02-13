@@ -8,26 +8,25 @@
 #include "imgui.h"
 #include "texture.h"
 #include "image.h"
+#include "clone.h"
 
 #include <vector>
-#include <memory>
 #include <cstdio>
 
 using std::vector;
-using std::shared_ptr;
-using std::make_shared;
 
 enum TaskType {
 	Linear = 0,
 };
 
-class AbstractTask {
+class AbstractTask : public Clone<AbstractTask> {
 private:
 public:
 	virtual ~AbstractTask() = default;
 
 	SubImage image;
 	bool isSelected = false;
+	bool isRightClicked = false;
 
 	void draw(double time);
 
@@ -41,7 +40,7 @@ public:
 	static shared_ptr<AbstractTask> create(FILE *file);
 };
 
-class LinearTask : public AbstractTask {
+class LinearTask : public DeriveClone<LinearTask, AbstractTask> {
 private:
 	ImVec2 startPos, endPos, startScale = ImVec2(1, 1), endScale = ImVec2(1, 1);
 	ImVec2 *pendingClick;

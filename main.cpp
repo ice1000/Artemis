@@ -18,12 +18,8 @@
 #include "image.h"
 #include "danmuku.h"
 
-#include <memory>
-
 // To suppress warnings and avoid modifying imgui source code
 #define NULL nullptr
-
-using std::shared_ptr;
 
 // Data
 ID3D11Device *g_pd3dDevice = NULL;
@@ -157,7 +153,7 @@ int main(int argc, const char *argv[]) {
 	ImGui::CreateContext();
 	ImGuiIO &io = ImGui::GetIO();
 	(void) io;
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
@@ -252,15 +248,22 @@ int main(int argc, const char *argv[]) {
 			ImGui::SameLine();
 			ImGui::Checkbox("Open Image Preview", &previewWindowOpened);
 			for (size_t i = 0; i < spellCard.taskSize(); ++i) {
-				char title[20], popupId[20], changeImageButton[20], closeButton[20];
+				char title[20];
+				char popupId[20];
+				char changeImageButton[20];
+				char closeButton[20];
+				char duplicateButton[20];
 				ImFormatString(title, IM_ARRAYSIZE(title), "Task %i", i);
 				ImFormatString(popupId, IM_ARRAYSIZE(popupId), "Popup %i", i);
 				ImFormatString(changeImageButton, IM_ARRAYSIZE(changeImageButton),
 				               "Change Image##%i", i);
-				ImFormatString(closeButton, IM_ARRAYSIZE(closeButton), "x##%i", i);
+				ImFormatString(closeButton, IM_ARRAYSIZE(closeButton), "Delete##%i", i);
+				ImFormatString(duplicateButton, IM_ARRAYSIZE(duplicateButton),
+				               "Duplicate##%i", i);
 				auto task = spellCard.getTask(i);
 				ImGui::Selectable(title, &task->isSelected);
-				if (ImGui::IsItemClicked(1)) ImGui::OpenPopup(popupId);
+				if (ImGui::IsItemClicked(1) || task->isRightClicked)
+					ImGui::OpenPopup(popupId);
 				if (ImGui::BeginPopup(popupId)) {
 					task->editor();
 					if (ImGui::Button(changeImageButton))
@@ -278,6 +281,8 @@ int main(int argc, const char *argv[]) {
 						ImGui::EndPopup();
 					}
 					if (ImGui::Button(closeButton)) spellCard.removeTask(i);
+					ImGui::SameLine();
+					if (ImGui::Button(duplicateButton)) spellCard.addTask(task->clone());
 					ImGui::EndPopup();
 				}
 			}

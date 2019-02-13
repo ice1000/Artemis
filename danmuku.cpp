@@ -14,6 +14,7 @@ void SpellCard::draw(double time) {
 			if (ImGui::GetIO().KeyCtrl) task->isSelected = true;
 			else selected = task.get();
 		}
+		task->isRightClicked = ImGui::IsItemClicked(1);
 	}
 	if (selected) {
 		for (auto &task : tasks) task->isSelected = false;
@@ -71,21 +72,22 @@ void LinearTask::editor() {
 	ImGui::Checkbox("Show Path", &showPath);
 	bool sync = ImGui::GetIO().KeyAlt;
 	if (ImGui::CollapsingHeader("Positioning")) {
+		if (ImGui::Button("Mouse ...##StartPos")) pendingClick = &startPos;
+		ImGui::SameLine();
 		ImVec2 originalStart = startPos;
 		if (ImGui::SliderFloat2("Start##Pos", reinterpret_cast<float *>(&startPos),
 		                        0, 700)) {
 			if (sync && startPos.x != originalStart.x) endPos.x = startPos.x;
 			if (sync && startPos.y != originalStart.y) endPos.y = startPos.y;
 		}
+		if (ImGui::Button("Mouse ...##EndPos")) pendingClick = &endPos;
 		ImGui::SameLine();
-		if (ImGui::Button("Mouse ...##StartPos")) pendingClick = &startPos;
 		ImVec2 originalEnd = endPos;
 		if (ImGui::SliderFloat2("End##Pos", reinterpret_cast<float *>(&endPos), 0,
 		                        700)) {
 			if (sync && endPos.x != originalEnd.x) startPos.x = endPos.x;
 			if (sync && endPos.y != originalEnd.y) startPos.y = endPos.y;
 		}
-		if (ImGui::Button("Mouse ...##EndPos")) pendingClick = &endPos;
 	}
 	if (ImGui::CollapsingHeader("Scaling")) {
 		if (ImGui::Button("Reset##StartScale")) startScale = ImVec2(1, 1);
@@ -144,7 +146,7 @@ void LinearTask::drawOthers() {
 		ImVec2 &&delta = endPos - startPos;
 		ImVec2 offset = startPos;
 		float alpha = isSelected ? 1 : .7f;
-		float thickness = isSelected ? 2 : .5;
+		float thickness = isSelected ? 2 : .5f;
 		ImGui::Line(offset + (image.size * startScale) / 2, delta,
 		            ImVec4(1, 0, 0, alpha), thickness);
 	}
@@ -174,9 +176,9 @@ void AbstractTask::draw(double time) {
 	const ImVec2 &previousPos = calcPos(time - 0.0001);
 	ImGui::SetCursorPos(currentPos);
 	const ImVec2 &dir = currentPos - previousPos;
-	// FIXME wrong calculation
-	float rotation = atan(-dir.y / dir.x);
 	drawWithoutRotate(time);
+	float rotation = atan(-dir.y / dir.x);
+	if (dir.x < 0) rotation += IM_PI;
 	ImGui::EndRotate(rotation, rotation_start_index);
 }
 
