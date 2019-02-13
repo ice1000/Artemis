@@ -5,6 +5,7 @@
 #include "danmuku.h"
 
 void SpellCard::draw(double time) {
+	for (auto &task : tasks) task->drawOthers();
 	AbstractTask *selected = nullptr;
 	// Explicit typed to make CLion happy
 	for (shared_ptr<AbstractTask> &task : tasks) {
@@ -75,18 +76,25 @@ void LinearTask::editor() {
 			if (sync && startPos.x != originalStart.x) endPos.x = startPos.x;
 			if (sync && startPos.y != originalStart.y) endPos.y = startPos.y;
 		}
+		ImGui::SameLine();
+		if (ImGui::Button("Mouse ...##StartPos")) pendingClick = &startPos;
 		ImVec2 originalEnd = endPos;
 		if (ImGui::SliderFloat2("End##Pos", reinterpret_cast<float *>(&endPos), 0, 700)) {
 			if (sync && endPos.x != originalEnd.x) startPos.x = endPos.x;
 			if (sync && endPos.y != originalEnd.y) startPos.y = endPos.y;
 		}
+		if (ImGui::Button("Mouse ...##EndPos")) pendingClick = &endPos;
 	}
 	if (ImGui::CollapsingHeader("Scaling")) {
+		if (ImGui::Button("Reset##StartScale")) startScale = ImVec2(1, 1);
+		ImGui::SameLine();
 		ImVec2 originalStart = startScale;
 		if (ImGui::SliderFloat2("Start##Scale", reinterpret_cast<float *>(&startScale), -5, 5)) {
 			if (sync && startScale.x != originalStart.x) endScale.x = startScale.x;
 			if (sync && startScale.y != originalStart.y) endScale.y = startScale.y;
 		}
+		if (ImGui::Button("Reset##EndScale")) endScale = ImVec2(1, 1);
+		ImGui::SameLine();
 		ImVec2 originalEnd = endScale;
 		if (ImGui::SliderFloat2("End##Scale", reinterpret_cast<float *>(&endScale), -5, 5)) {
 			if (sync && endScale.x != originalEnd.x) startScale.x = endScale.x;
@@ -129,8 +137,14 @@ void LinearTask::drawOthers() {
 		ImGui::SetCursorPos({});
 		ImVec2 &&delta = endPos - startPos;
 		ImVec2 offset = startPos;
-		const ImVec2 &halfSize = image.size / 2;
-		ImGui::Line(offset + halfSize, delta + halfSize, ImVec4(1, 0, 0, 1), 2);
+		float alpha = isSelected ? 1 : .7f;
+		float thickness = isSelected ? 2 : .5;
+		ImGui::Line(offset + (image.size * startScale) / 2, delta, ImVec4(1, 0, 0, alpha), thickness);
+	}
+	if (pendingClick) {
+		const auto &mouse = ImGui::GetIO().MousePos - ImGui::GetCurrentWindow()->Pos;
+		*pendingClick = mouse;
+		if (ImGui::IsMouseDoubleClicked(0)) pendingClick = nullptr;
 	}
 }
 
@@ -152,10 +166,10 @@ void AbstractTask::draw(double time) {
 	const ImVec2 &previousPos = calcPos(time - 0.0001);
 	ImGui::SetCursorPos(currentPos);
 	const ImVec2 &dir = currentPos - previousPos;
+	// FIXME wrong calculation
 	float rotation = atan(-dir.y / dir.x);
 	drawWithoutRotate(time);
 	ImGui::EndRotate(rotation, rotation_start_index);
-	drawOthers();
 }
 
 void AbstractTask::drawOthers() {}

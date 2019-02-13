@@ -1,6 +1,9 @@
 // dear imgui - standalone example application for DirectX 11
 // If you are new to dear imgui, see examples/README.txt and documentation at the top of imgui.cpp.
 
+// I don't like `fopen_s` but I'm fine with `fscanf_s`
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
@@ -16,6 +19,9 @@
 #include "danmuku.h"
 
 #include <memory>
+
+// To suppress warnings and avoid modifying imgui source code
+#define NULL nullptr
 
 using std::shared_ptr;
 
@@ -150,11 +156,13 @@ int main(int argc, const char *argv[]) {
 	ImGui_ImplWin32_Init(hwnd);
 	ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
 
+	// Load image resource
 	CompleteImage completeImage;
 	CompleteImage::fromFile("res/etama.png", completeImage);
 	SubImage imageSet[12][16];
 	{
-		ImVec2 pos = ImVec2(0, 0), size = ImVec2(16, 15);
+		// Skip the first pixel at y-axis
+		ImVec2 pos = ImVec2(0, 1), size = ImVec2(16, 16);
 		for (auto &column : imageSet) {
 			for (auto &item : column) {
 				item = completeImage.toSubImage();
@@ -164,8 +172,6 @@ int main(int argc, const char *argv[]) {
 			}
 			pos.x = 0;
 			pos.y += 16;
-			// So only the first column's y 15
-			size.y = 16;
 		}
 	}
 
@@ -222,7 +228,7 @@ int main(int argc, const char *argv[]) {
 		if (ImGui::Begin("Editor")) {
 			ImGui::ColorEdit3("Background Color", reinterpret_cast<float *>(&clearColor));
 			ImGui::SliderFloat2("Item Spacing", reinterpret_cast<float *>(&spacing), -5, 5);
-			if (ImGui::SliderDouble("The World!", &fixedTime, -1, currentTime + 1)) {
+			if (ImGui::SliderDouble("The World!", &fixedTime, -.2, currentTime + 1)) {
 				if (fixedTime < 0) fixedTime = 0;
 			}
 			if (ImGui::Button("Play")) {

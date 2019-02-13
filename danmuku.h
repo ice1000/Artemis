@@ -44,6 +44,7 @@ public:
 class LinearTask : public AbstractTask {
 private:
 	ImVec2 startPos, endPos, startScale = ImVec2(1, 1), endScale = ImVec2(1, 1);
+	ImVec2 *pendingClick;
 	bool showPath = false;
 	double startTime = 0, stayTime = 1;
 	double endTime() const;
