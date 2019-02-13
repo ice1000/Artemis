@@ -19,6 +19,10 @@ enum TaskType {
 	Linear = 0,
 };
 
+class AbstractTask;
+
+using Tasks = vector<shared_ptr<AbstractTask>>;
+
 class AbstractTask : public Clone<AbstractTask> {
 private:
 public:
@@ -28,7 +32,8 @@ public:
 	bool isSelected = false;
 	bool isRightClicked = false;
 
-	void draw(double time);
+	virtual void draw(double time);
+	virtual void extension(AbstractTask *other, Tasks &tasks);
 
 	virtual void drawWithoutRotate(double time) = 0;
 	virtual void drawOthers();
@@ -50,6 +55,7 @@ private:
 public:
 	~LinearTask() override = default;
 	ImVec2 calcPos(double time) override;
+	void extension(AbstractTask *other, Tasks &tasks) override;
 	void drawWithoutRotate(double time) override;
 	void drawOthers() override;
 	void editor() override;
@@ -60,14 +66,11 @@ public:
 
 class SpellCard {
 private:
-	vector<shared_ptr<AbstractTask>> tasks;
+	Tasks tasks;
 
 public:
 	SpellCard() = default;
-	void addTask(shared_ptr<AbstractTask> task);
-	void removeTask(size_t index);
-	shared_ptr<AbstractTask> getTask(size_t index) const;
-	size_t taskSize() const;
+	Tasks &getTasks();
 	void draw(double time);
 	void write(FILE *file);
 	void read(FILE *file, CompleteImage *complete);

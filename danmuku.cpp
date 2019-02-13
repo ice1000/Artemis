@@ -22,18 +22,6 @@ void SpellCard::draw(double time) {
 	}
 }
 
-void SpellCard::addTask(shared_ptr<AbstractTask> task) {
-	tasks.emplace_back(task);
-}
-
-shared_ptr<AbstractTask> SpellCard::getTask(size_t index) const {
-	return tasks[index];
-}
-
-size_t SpellCard::taskSize() const {
-	return tasks.size();
-}
-
 void SpellCard::write(FILE *file) {
 	fprintf(file, "%i", tasks.size());
 	for (const auto &task : tasks) {
@@ -48,12 +36,12 @@ void SpellCard::read(FILE *file, CompleteImage *complete) {
 	for (size_t i = 0; i < taskSize; ++i) {
 		auto task = AbstractTask::create(file);
 		task->read(file, complete);
-		addTask(task);
+		tasks.emplace_back(task);
 	}
 }
 
-void SpellCard::removeTask(size_t index) {
-	tasks.erase(tasks.begin() + index);
+Tasks &SpellCard::getTasks() {
+	return tasks;
 }
 
 void LinearTask::drawWithoutRotate(double time) {
@@ -77,16 +65,20 @@ void LinearTask::editor() {
 		ImVec2 originalStart = startPos;
 		if (ImGui::SliderFloat2("Start##Pos", reinterpret_cast<float *>(&startPos),
 		                        0, 700)) {
-			if (sync && startPos.x != originalStart.x) endPos.x = startPos.x;
-			if (sync && startPos.y != originalStart.y) endPos.y = startPos.y;
+			if (sync && startPos.x != originalStart.x)
+				endPos.x += startPos.x - originalStart.x;
+			if (sync && startPos.y != originalStart.y)
+				endPos.y += startPos.y - originalStart.y;
 		}
 		if (ImGui::Button("Mouse ...##EndPos")) pendingClick = &endPos;
 		ImGui::SameLine();
 		ImVec2 originalEnd = endPos;
 		if (ImGui::SliderFloat2("End##Pos", reinterpret_cast<float *>(&endPos), 0,
 		                        700)) {
-			if (sync && endPos.x != originalEnd.x) startPos.x = endPos.x;
-			if (sync && endPos.y != originalEnd.y) startPos.y = endPos.y;
+			if (sync && endPos.x != originalEnd.x)
+				startPos.x += endPos.x - originalEnd.x;
+			if (sync && endPos.y != originalEnd.y)
+				startPos.y += endPos.y - originalEnd.y;
 		}
 	}
 	if (ImGui::CollapsingHeader("Scaling")) {
@@ -151,10 +143,58 @@ void LinearTask::drawOthers() {
 		            ImVec4(1, 0, 0, alpha), thickness);
 	}
 	if (pendingClick) {
-		const auto &mouse =
-				ImGui::GetIO().MousePos - ImGui::GetCurrentWindow()->Pos;
-		*pendingClick = mouse;
+		*pendingClick = ImGui::GetIO().MousePos - ImGui::GetCurrentWindow()->Pos;
 		if (ImGui::IsMouseDoubleClicked(0)) pendingClick = nullptr;
+	}
+}
+
+#define GEN_L_R LinearTask *l, *r; \
+if (startPos.x > other->startPos.x) { \
+  l = other; \
+  r = this; \
+} else { \
+  l = this; \
+  r = other; \
+}
+
+void LinearTask::extension(AbstractTask *absOther, Tasks &tasks) {
+	auto *other = dynamic_cast<LinearTask *>(absOther);
+	if (!other) return;
+	if (ImGui::TreeNode("Next Permutation")) {
+		if (ImGui::Button("Between")) {
+			auto task = make_shared<LinearTask>();
+			task->image = image;
+			task->startPos = (startPos + other->startPos) / 2;
+			task->endPos = (endPos + other->endPos) / 2;
+			task->startScale = (startScale + other->startScale) / 2;
+			task->endScale = (endScale + other->endScale) / 2;
+			tasks.emplace_back(task);
+		}
+		if (ImGui::Button("Left (Start Pos)")) {
+			GEN_L_R
+			auto task = make_shared<LinearTask>();
+			task->image = l->image;
+			task->startPos = l->startPos - (r->startPos - l->startPos);
+			task->endPos = l->endPos - (r->endPos - l->endPos);
+			task->startScale = l->startScale - (r->startScale - l->startScale);
+			task->endScale = l->endScale - (r->endScale - l->endScale);
+			tasks.emplace_back(task);
+			r->isSelected = false;
+			task->isSelected = true;
+		}
+		if (ImGui::Button("Right (Start Pos)")) {
+			GEN_L_R
+			auto task = make_shared<LinearTask>();
+			task->image = r->image;
+			task->startPos = r->startPos + (r->startPos - l->startPos);
+			task->endPos = r->endPos + (r->endPos - l->endPos);
+			task->startScale = r->startScale + (r->startScale - l->startScale);
+			task->endScale = r->endScale + (r->endScale - l->endScale);
+			tasks.emplace_back(task);
+			l->isSelected = false;
+			task->isSelected = true;
+		}
+		ImGui::TreePop();
 	}
 }
 
@@ -183,3 +223,6 @@ void AbstractTask::draw(double time) {
 }
 
 void AbstractTask::drawOthers() {}
+
+void AbstractTask::extension(AbstractTask *other,
+                             vector<shared_ptr<AbstractTask>> &tasks) {}

@@ -152,7 +152,6 @@ int main(int argc, const char *argv[]) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO &io = ImGui::GetIO();
-	(void) io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
 
 	// Setup Dear ImGui style
@@ -236,8 +235,8 @@ int main(int argc, const char *argv[]) {
 		if (ImGui::Begin("Editor")) {
 			ImGui::ColorEdit3("Background Color",
 			                  reinterpret_cast<float *>(&clearColor));
-			ImGui::SliderFloat2("Item Spacing", reinterpret_cast<float *>(&spacing),
-			                    -5, 5);
+			ImGui::SliderFloat2("Item Spacing",
+			                    reinterpret_cast<float *>(&spacing), -5, 5);
 			if (ImGui::SliderDouble("The World!", &fixedTime, -.2, currentTime + 1)) {
 				if (fixedTime < 0) fixedTime = 0;
 			}
@@ -247,7 +246,10 @@ int main(int argc, const char *argv[]) {
 			}
 			ImGui::SameLine();
 			ImGui::Checkbox("Open Image Preview", &previewWindowOpened);
-			for (size_t i = 0; i < spellCard.taskSize(); ++i) {
+			auto &tasks = spellCard.getTasks();
+			Tasks operandTasks;
+			operandTasks.reserve(2);
+			for (size_t i = 0; i < tasks.size(); ++i) {
 				char title[20];
 				char popupId[20];
 				char changeImageButton[20];
@@ -260,7 +262,7 @@ int main(int argc, const char *argv[]) {
 				ImFormatString(closeButton, IM_ARRAYSIZE(closeButton), "Delete##%i", i);
 				ImFormatString(duplicateButton, IM_ARRAYSIZE(duplicateButton),
 				               "Duplicate##%i", i);
-				auto task = spellCard.getTask(i);
+				auto task = tasks[i];
 				ImGui::Selectable(title, &task->isSelected);
 				if (ImGui::IsItemClicked(1) || task->isRightClicked)
 					ImGui::OpenPopup(popupId);
@@ -280,16 +282,25 @@ int main(int argc, const char *argv[]) {
 						}
 						ImGui::EndPopup();
 					}
-					if (ImGui::Button(closeButton)) spellCard.removeTask(i);
+					if (ImGui::Button(closeButton)) {
+						ImGui::CloseCurrentPopup();
+						tasks.erase(tasks.begin() + i);
+					}
 					ImGui::SameLine();
-					if (ImGui::Button(duplicateButton)) spellCard.addTask(task->clone());
+					if (ImGui::Button(duplicateButton)) tasks.emplace_back(task->clone());
 					ImGui::EndPopup();
 				}
+				if (operandTasks.size() < 2 && task->isSelected)
+					operandTasks.push_back(task);
 			}
-			if (ImGui::Button("+")) {
+			if (ImGui::Button("Add New")) {
 				auto task = make_shared<LinearTask>();
 				task->image = imageSet[1][1];
-				spellCard.addTask(task);
+				tasks.emplace_back(task);
+			}
+			if (operandTasks.size() >= 2 && ImGui::CollapsingHeader("Operations")) {
+				AbstractTask *lhs = operandTasks[0].get(), *rhs = operandTasks[1].get();
+				lhs->extension(rhs, tasks);
 			}
 			ImGui::End();
 		}
