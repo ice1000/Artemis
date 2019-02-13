@@ -33,8 +33,10 @@ static ID3D11RenderTargetView *g_mainRenderTargetView = NULL;
 
 void CreateRenderTarget() {
 	ID3D11Texture2D *pBackBuffer;
-	g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *) &pBackBuffer);
-	g_pd3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &g_mainRenderTargetView);
+	g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D),
+	                        (LPVOID *) &pBackBuffer);
+	g_pd3dDevice->CreateRenderTargetView(pBackBuffer, NULL,
+	                                     &g_mainRenderTargetView);
 	pBackBuffer->Release();
 }
 
@@ -66,9 +68,12 @@ HRESULT CreateDeviceD3D(HWND hWnd) {
 	UINT createDeviceFlags = 0;
 	//createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 	D3D_FEATURE_LEVEL featureLevel;
-	const D3D_FEATURE_LEVEL featureLevelArray[2] = {D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0,};
-	if (D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, createDeviceFlags, featureLevelArray, 2,
-	                                  D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel,
+	const D3D_FEATURE_LEVEL featureLevelArray[2] = {D3D_FEATURE_LEVEL_11_0,
+	                                                D3D_FEATURE_LEVEL_10_0,};
+	if (D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL,
+	                                  createDeviceFlags, featureLevelArray, 2,
+	                                  D3D11_SDK_VERSION, &sd, &g_pSwapChain,
+	                                  &g_pd3dDevice, &featureLevel,
 	                                  &g_pd3dDeviceContext) != S_OK)
 		return E_FAIL;
 
@@ -93,7 +98,9 @@ void CleanupDeviceD3D() {
 	}
 }
 
-extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern LRESULT
+ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam,
+                               LPARAM lParam);
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
@@ -103,7 +110,9 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		case WM_SIZE:
 			if (g_pd3dDevice != NULL && wParam != SIZE_MINIMIZED) {
 				CleanupRenderTarget();
-				g_pSwapChain->ResizeBuffers(0, (UINT) LOWORD(lParam), (UINT) HIWORD(lParam), DXGI_FORMAT_UNKNOWN, 0);
+				g_pSwapChain->ResizeBuffers(0, (UINT) LOWORD(lParam),
+				                            (UINT) HIWORD(lParam), DXGI_FORMAT_UNKNOWN,
+				                            0);
 				CreateRenderTarget();
 			}
 			return 0;
@@ -124,10 +133,12 @@ int main(int argc, const char *argv[]) {
 	const char *fileName = argc >= 2 ? argv[1] : "res/Artemis.txt";
 
 	// Create application window
-	WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
+	WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, WndProc, 0L, 0L,
+	                 GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
 	                 _T("Artemis"), NULL};
 	RegisterClassEx(&wc);
-	HWND hwnd = CreateWindow(wc.lpszClassName, _T("Artemis Shooting Game Editor"), WS_OVERLAPPEDWINDOW, 100, 100, 1280,
+	HWND hwnd = CreateWindow(wc.lpszClassName, _T("Artemis Shooting Game Editor"),
+	                         WS_OVERLAPPEDWINDOW, 100, 100, 1280,
 	                         800, NULL, NULL, wc.hInstance, NULL);
 
 	// Initialize Direct3D
@@ -214,7 +225,8 @@ int main(int argc, const char *argv[]) {
 		ImGui::GetStyle().ItemSpacing = originalSpacing;
 		if (fixedTime < 0)
 			currentTime = ImGui::GetTime() - startTime;
-		if (previewWindowOpened && ImGui::Begin("Preview Images", &previewWindowOpened)) {
+		if (previewWindowOpened &&
+		    ImGui::Begin("Preview Images", &previewWindowOpened)) {
 			for (auto &column : imageSet) {
 				for (auto &item : column) {
 					item.drawWithBoarder();
@@ -226,8 +238,10 @@ int main(int argc, const char *argv[]) {
 		}
 
 		if (ImGui::Begin("Editor")) {
-			ImGui::ColorEdit3("Background Color", reinterpret_cast<float *>(&clearColor));
-			ImGui::SliderFloat2("Item Spacing", reinterpret_cast<float *>(&spacing), -5, 5);
+			ImGui::ColorEdit3("Background Color",
+			                  reinterpret_cast<float *>(&clearColor));
+			ImGui::SliderFloat2("Item Spacing", reinterpret_cast<float *>(&spacing),
+			                    -5, 5);
 			if (ImGui::SliderDouble("The World!", &fixedTime, -.2, currentTime + 1)) {
 				if (fixedTime < 0) fixedTime = 0;
 			}
@@ -241,14 +255,16 @@ int main(int argc, const char *argv[]) {
 				char title[20], popupId[20], changeImageButton[20], closeButton[20];
 				ImFormatString(title, IM_ARRAYSIZE(title), "Task %i", i);
 				ImFormatString(popupId, IM_ARRAYSIZE(popupId), "Popup %i", i);
-				ImFormatString(changeImageButton, IM_ARRAYSIZE(changeImageButton), "Change Image##%i", i);
+				ImFormatString(changeImageButton, IM_ARRAYSIZE(changeImageButton),
+				               "Change Image##%i", i);
 				ImFormatString(closeButton, IM_ARRAYSIZE(closeButton), "x##%i", i);
 				auto task = spellCard.getTask(i);
 				ImGui::Selectable(title, &task->isSelected);
 				if (ImGui::IsItemClicked(1)) ImGui::OpenPopup(popupId);
 				if (ImGui::BeginPopup(popupId)) {
 					task->editor();
-					if (ImGui::Button(changeImageButton)) ImGui::OpenPopup(CHANGE_IMAGE_POPUP);
+					if (ImGui::Button(changeImageButton))
+						ImGui::OpenPopup(CHANGE_IMAGE_POPUP);
 					if (ImGui::BeginPopup(CHANGE_IMAGE_POPUP)) {
 						for (auto &column : imageSet) {
 							for (auto &item : column) {
@@ -276,7 +292,8 @@ int main(int argc, const char *argv[]) {
 		ImGui::GetStyle().ItemSpacing = spacing;
 		ImGui::SetNextWindowBgAlpha(.5f);
 
-		ImFormatString(debugWindowTitle, IM_ARRAYSIZE(debugWindowTitle), "Fps: %f, Time: %lf###Debug",
+		ImFormatString(debugWindowTitle, IM_ARRAYSIZE(debugWindowTitle),
+		               "Fps: %f, Time: %lf###Debug",
 		               io.Framerate, currentTime);
 		if (ImGui::Begin(debugWindowTitle)) {
 			spellCard.draw(fixedTime > 0 ? fixedTime : currentTime);
@@ -285,7 +302,8 @@ int main(int argc, const char *argv[]) {
 
 		ImGui::Render();
 		g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, NULL);
-		g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView, (float *) &clearColor);
+		g_pd3dDeviceContext->ClearRenderTargetView(g_mainRenderTargetView,
+		                                           (float *) &clearColor);
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 		g_pSwapChain->Present(1, 0);

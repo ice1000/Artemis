@@ -72,14 +72,16 @@ void LinearTask::editor() {
 	bool sync = ImGui::GetIO().KeyAlt;
 	if (ImGui::CollapsingHeader("Positioning")) {
 		ImVec2 originalStart = startPos;
-		if (ImGui::SliderFloat2("Start##Pos", reinterpret_cast<float *>(&startPos), 0, 700)) {
+		if (ImGui::SliderFloat2("Start##Pos", reinterpret_cast<float *>(&startPos),
+		                        0, 700)) {
 			if (sync && startPos.x != originalStart.x) endPos.x = startPos.x;
 			if (sync && startPos.y != originalStart.y) endPos.y = startPos.y;
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Mouse ...##StartPos")) pendingClick = &startPos;
 		ImVec2 originalEnd = endPos;
-		if (ImGui::SliderFloat2("End##Pos", reinterpret_cast<float *>(&endPos), 0, 700)) {
+		if (ImGui::SliderFloat2("End##Pos", reinterpret_cast<float *>(&endPos), 0,
+		                        700)) {
 			if (sync && endPos.x != originalEnd.x) startPos.x = endPos.x;
 			if (sync && endPos.y != originalEnd.y) startPos.y = endPos.y;
 		}
@@ -89,14 +91,16 @@ void LinearTask::editor() {
 		if (ImGui::Button("Reset##StartScale")) startScale = ImVec2(1, 1);
 		ImGui::SameLine();
 		ImVec2 originalStart = startScale;
-		if (ImGui::SliderFloat2("Start##Scale", reinterpret_cast<float *>(&startScale), -5, 5)) {
+		if (ImGui::SliderFloat2("Start##Scale",
+		                        reinterpret_cast<float *>(&startScale), -5, 5)) {
 			if (sync && startScale.x != originalStart.x) endScale.x = startScale.x;
 			if (sync && startScale.y != originalStart.y) endScale.y = startScale.y;
 		}
 		if (ImGui::Button("Reset##EndScale")) endScale = ImVec2(1, 1);
 		ImGui::SameLine();
 		ImVec2 originalEnd = endScale;
-		if (ImGui::SliderFloat2("End##Scale", reinterpret_cast<float *>(&endScale), -5, 5)) {
+		if (ImGui::SliderFloat2("End##Scale", reinterpret_cast<float *>(&endScale),
+		                        -5, 5)) {
 			if (sync && endScale.x != originalEnd.x) startScale.x = endScale.x;
 			if (sync && endScale.y != originalEnd.y) startScale.y = endScale.y;
 		}
@@ -110,7 +114,8 @@ void LinearTask::editor() {
 void LinearTask::write(FILE *file) {
 	image.write(file);
 	fprintf(file, "%lf,%lf,", startTime, stayTime);
-	fprintf(file, "%f,%f,%f,%f,", startScale.x, startScale.y, endScale.x, endScale.y);
+	fprintf(file, "%f,%f,%f,%f,", startScale.x, startScale.y, endScale.x,
+	        endScale.y);
 	fprintf(file, "%f,%f,%f,%f,", startPos.x, startPos.y, endPos.x, endPos.y);
 	fputs("", file);
 	fflush(file);
@@ -119,7 +124,8 @@ void LinearTask::write(FILE *file) {
 void LinearTask::read(FILE *file, CompleteImage *complete) {
 	image.read(file, complete);
 	FSCANF(file, "%lf,%lf,", &startTime, &stayTime);
-	FSCANF(file, "%f,%f,%f,%f,", &startScale.x, &startScale.y, &endScale.x, &endScale.y);
+	FSCANF(file, "%f,%f,%f,%f,", &startScale.x, &startScale.y, &endScale.x,
+	       &endScale.y);
 	FSCANF(file, "%f,%f,%f,%f,", &startPos.x, &startPos.y, &endPos.x, &endPos.y);
 }
 
@@ -139,10 +145,12 @@ void LinearTask::drawOthers() {
 		ImVec2 offset = startPos;
 		float alpha = isSelected ? 1 : .7f;
 		float thickness = isSelected ? 2 : .5;
-		ImGui::Line(offset + (image.size * startScale) / 2, delta, ImVec4(1, 0, 0, alpha), thickness);
+		ImGui::Line(offset + (image.size * startScale) / 2, delta,
+		            ImVec4(1, 0, 0, alpha), thickness);
 	}
 	if (pendingClick) {
-		const auto &mouse = ImGui::GetIO().MousePos - ImGui::GetCurrentWindow()->Pos;
+		const auto &mouse =
+				ImGui::GetIO().MousePos - ImGui::GetCurrentWindow()->Pos;
 		*pendingClick = mouse;
 		if (ImGui::IsMouseDoubleClicked(0)) pendingClick = nullptr;
 	}

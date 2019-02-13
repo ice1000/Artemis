@@ -21,15 +21,18 @@ void SubImage::draw(const ImVec2 &scale) {
 }
 
 bool SubImage::drawButton(const ImVec2 &scale) {
-	return ImGui::ImageButton(completeImage->textureID, size * scale, uv0(), uv1());
+	return ImGui::ImageButton(completeImage->textureID, size * scale, uv0(),
+	                          uv1());
 }
 
 void SubImage::drawWithBoarder(const ImVec2 &scale) {
-	ImGui::Image(completeImage->textureID, size * scale, uv0(), uv1(), ImVec4(2, 2, 2, 2),
+	ImGui::Image(completeImage->textureID, size * scale, uv0(), uv1(),
+	             ImVec4(2, 2, 2, 2),
 	             ImVec4(1, 0, 0, 1));
 }
 
-SubImage::SubImage(const CompleteImage *completeImage) : completeImage(completeImage) {
+SubImage::SubImage(const CompleteImage *completeImage) : completeImage(
+		completeImage) {
 	size = completeImage->fullSize;
 }
 
@@ -58,7 +61,8 @@ SubImage CompleteImage::toSubImage() const {
 	return SubImage(this);
 }
 
-void ImGui::Line(const ImVec2 &offset, const ImVec2 &delta, const ImVec4 &color, float thickness) {
+void ImGui::Line(const ImVec2 &offset, const ImVec2 &delta, const ImVec4 &color,
+                 float thickness) {
 	ImGuiWindow *window = GImGui->CurrentWindow;
 	if (window->SkipItems) return;
 	auto &&cursorPos = window->DC.CursorPos + offset;
@@ -76,8 +80,11 @@ void ImGui::Line(const ImVec2 &delta, const float thickness) {
 	Line(delta, ImGui::GetStyle().Colors[ImGuiCol_PlotLines], thickness);
 }
 
-bool ImGui::SliderDouble(const char *label, double *v, double v_min, double v_max, const char *format, double power) {
-	return SliderScalar(label, ImGuiDataType_Double, v, &v_min, &v_max, format, power);
+bool
+ImGui::SliderDouble(const char *label, double *v, double v_min, double v_max,
+                    const char *format, double power) {
+	return SliderScalar(label, ImGuiDataType_Double, v, &v_min, &v_max, format,
+	                    power);
 }
 
 ImVec2 ImGui::RotationCenter(size_t rotation_start_index) {

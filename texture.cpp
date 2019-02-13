@@ -3,13 +3,16 @@
 //
 
 #define STB_IMAGE_IMPLEMENTATION
+
 #include "stb_image.h"
 
 #include "texture.h"
 
 #include <d3d11.h>
 
-HRESULT initTexture(void *imageData, ID3D11ShaderResourceView **texture, int width, int height) {
+HRESULT
+initTexture(void *imageData, ID3D11ShaderResourceView **texture, int width,
+            int height) {
 	HRESULT hr{S_OK};
 
 	// Create texture
@@ -59,12 +62,14 @@ HRESULT initTexture(void *imageData, ID3D11ShaderResourceView **texture, int wid
 	return hr;
 }
 
-bool loadTexture(unsigned char *rawData, size_t dataSize, size_t &width, size_t &height, ImTextureID &texture) {
+bool loadTexture(unsigned char *rawData, size_t dataSize, size_t &width,
+                 size_t &height, ImTextureID &texture) {
 	bool result{false};
 	int channels;
 	int forceChannels = 4;
 	int w, h;
-	auto *imageData = stbi_load_from_memory(rawData, static_cast<int>(dataSize), &w, &h, &channels, forceChannels);
+	auto *imageData = stbi_load_from_memory(rawData, static_cast<int>(dataSize),
+	                                        &w, &h, &channels, forceChannels);
 	width = static_cast<size_t>(w);
 	height = static_cast<size_t>(h);
 
@@ -81,7 +86,8 @@ bool loadTexture(unsigned char *rawData, size_t dataSize, size_t &width, size_t 
 	return result;
 }
 
-bool loadTexture(const char *fileName, size_t &width, size_t &height, ImTextureID &texture) {
+bool loadTexture(const char *fileName, size_t &width, size_t &height,
+                 ImTextureID &texture) {
 	bool result = false;
 
 	int channels;

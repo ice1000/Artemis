@@ -18,15 +18,20 @@
 #endif
 
 namespace ImGui {
-	void Line(const ImVec2 &offset, const ImVec2 &delta, const ImVec4 &color, float thickness);
-	void LineFromTo(const ImVec2 &from, const ImVec2 &to, float thickness, const ImVec4 &color);
+	void Line(const ImVec2 &offset, const ImVec2 &delta, const ImVec4 &color,
+	          float thickness);
+	void LineFromTo(const ImVec2 &from, const ImVec2 &to, float thickness,
+	                const ImVec4 &color);
 	void Line(const ImVec2 &delta, const ImVec4 &color, float thickness);
 	void Line(const ImVec2 &delta, const float thickness);
-	bool SliderDouble(const char *label, double *v, double v_min, double v_max, const char *format = "%.6lf", double power = 1.0);
+	bool SliderDouble(const char *label, double *v, double v_min, double v_max,
+	                  const char *format = "%.6lf", double power = 1.0);
 	ImVec2 RotationCenter(size_t rotation_start_index);
 	void EndRotate(float rad, size_t rotation_start_index);
 	void EndRotate(float rad, size_t rotation_start_index, ImVec2 center);
-	inline auto BeginRotate() noexcept { return ImGui::GetWindowDrawList()->VtxBuffer.Size; }
+
+	inline auto
+	BeginRotate() noexcept { return ImGui::GetWindowDrawList()->VtxBuffer.Size; }
 }
 
 class CompleteImage;
@@ -48,7 +53,7 @@ public:
 	bool drawButton(const ImVec2 &scale = ImVec2(1, 1));
 	void drawWithBoarder(const ImVec2 &scale = ImVec2(1, 1));
 	void write(FILE *file);
-	void read(FILE *file, CompleteImage* complete);
+	void read(FILE *file, CompleteImage *complete);
 };
 
 class CompleteImage {

@@ -11,7 +11,9 @@
 
 extern ID3D11Device *g_pd3dDevice;
 
-bool loadTexture(unsigned char *rawData, size_t dataSize, size_t &width, size_t &height, ImTextureID &texture);
-bool loadTexture(const char *fileName, size_t &width, size_t &height, ImTextureID &texture);
+bool loadTexture(unsigned char *rawData, size_t dataSize, size_t &width,
+                 size_t &height, ImTextureID &texture);
+bool loadTexture(const char *fileName, size_t &width, size_t &height,
+                 ImTextureID &texture);
 
 #endif //ARTEMIS_TEXTURE_H
