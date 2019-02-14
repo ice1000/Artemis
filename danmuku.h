@@ -17,6 +17,7 @@ using std::vector;
 
 enum TaskType {
 	Linear = 0,
+	Circular,
 };
 
 class AbstractTask;
@@ -50,7 +51,7 @@ public:
 class LinearTask : public DeriveClone<LinearTask, AbstractTask> {
 private:
 	ImVec2 startPos, endPos, startScale = ImVec2(1, 1), endScale = ImVec2(1, 1);
-	ImVec2 *pendingClick;
+	ImVec2 *pendingClick = nullptr;
 	bool showPath = false;
 	double startTime = 0, stayTime = 1;
 	double endTime() const;

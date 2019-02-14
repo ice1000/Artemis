@@ -49,7 +49,7 @@ void LinearTask::drawWithoutRotate(double time) {
 	auto percentage = static_cast<float>((time - startTime) / stayTime);
 	const ImVec2 &scale = (endScale - startScale) * percentage + startScale;
 	if (isSelected) image.drawWithBoarder(scale, ImVec4(1, 0, 0, 1));
-	else if (isHovered) image.drawWithBoarder(scale, ImVec4(.9f, 0, 0, .7f));
+	else if (isHovered) image.drawWithBoarder(scale, ImVec4(.8f, .1f, .1f, .6f));
 	else image.draw(scale);
 	isHovered = ImGui::IsItemHovered();
 }
@@ -150,13 +150,24 @@ void LinearTask::drawOthers() {
 	}
 }
 
-#define GEN_L_R LinearTask *l, *r; \
+#define INIT_L_R(Base, op) { \
+LinearTask *l, *r; \
 if (startPos.x > other->startPos.x) { \
   l = other; \
   r = this; \
 } else { \
   l = this; \
   r = other; \
+} \
+auto task = make_shared<LinearTask>(); \
+task->image = (Base)->image; \
+task->startPos = (Base)->startPos op (r->startPos - l->startPos); \
+task->endPos = (Base)->endPos op (r->endPos - l->endPos); \
+task->startScale = (Base)->startScale op (r->startScale - l->startScale); \
+task->endScale = (Base)->endScale op (r->endScale - l->endScale); \
+tasks.emplace_back(task); \
+(Base)->isSelected = false; \
+task->isSelected = true; \
 }
 
 void LinearTask::extension(AbstractTask *absOther, Tasks &tasks) {
@@ -172,33 +183,13 @@ void LinearTask::extension(AbstractTask *absOther, Tasks &tasks) {
 			task->endScale = (endScale + other->endScale) / 2;
 			tasks.emplace_back(task);
 		}
-		if (ImGui::Button("Left (Start Pos)")) {
-			GEN_L_R
-			auto task = make_shared<LinearTask>();
-			task->image = l->image;
-			task->startPos = l->startPos - (r->startPos - l->startPos);
-			task->endPos = l->endPos - (r->endPos - l->endPos);
-			task->startScale = l->startScale - (r->startScale - l->startScale);
-			task->endScale = l->endScale - (r->endScale - l->endScale);
-			tasks.emplace_back(task);
-			r->isSelected = false;
-			task->isSelected = true;
-		}
-		if (ImGui::Button("Right (Start Pos)")) {
-			GEN_L_R
-			auto task = make_shared<LinearTask>();
-			task->image = r->image;
-			task->startPos = r->startPos + (r->startPos - l->startPos);
-			task->endPos = r->endPos + (r->endPos - l->endPos);
-			task->startScale = r->startScale + (r->startScale - l->startScale);
-			task->endScale = r->endScale + (r->endScale - l->endScale);
-			tasks.emplace_back(task);
-			l->isSelected = false;
-			task->isSelected = true;
-		}
+		if (ImGui::Button("Left (Start Pos)")) INIT_L_R(r, +)
+		if (ImGui::Button("Right (Start Pos)")) INIT_L_R(r, +)
 		ImGui::TreePop();
 	}
 }
+
+#undef INIT_L_R
 
 shared_ptr<AbstractTask> AbstractTask::create(FILE *file) {
 	TaskType taskType;
@@ -226,4 +217,4 @@ void AbstractTask::draw(double time) {
 
 void AbstractTask::drawOthers() {}
 
-void AbstractTask::extension(AbstractTask *other, Tasks &tasks) {}
+void AbstractTask::extension(AbstractTask *, Tasks &) {}

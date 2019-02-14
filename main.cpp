@@ -19,7 +19,10 @@
 #include "danmuku.h"
 
 // To suppress warnings and avoid modifying imgui source code
+#undef NULL
 #define NULL nullptr
+
+constexpr size_t TITLE_BUFFER_SIZE = 30;
 
 // Data
 ID3D11Device *g_pd3dDevice = NULL;
@@ -168,7 +171,7 @@ int main(int argc, const char *argv[]) {
 	SubImage imageSet[12][16];
 	{
 		// Skip the first pixel at y-axis
-		ImVec2 pos = ImVec2(0, 1), size = ImVec2(16, 16);
+		ImVec2 pos = ImVec2(0, 0), size = ImVec2(16, 16);
 		for (auto &column : imageSet) {
 			for (auto &item : column) {
 				item = completeImage.toSubImage();
@@ -197,6 +200,9 @@ int main(int argc, const char *argv[]) {
 	double currentTime = startTime;
 	char debugWindowTitle[100];
 	bool previewWindowOpened = false;
+
+	Tasks selectedTasks;
+	selectedTasks.reserve(spellCard.getTasks().size());
 
 	// Main loop
 	MSG msg;
@@ -246,15 +252,14 @@ int main(int argc, const char *argv[]) {
 			}
 			ImGui::SameLine();
 			ImGui::Checkbox("Open Image Preview", &previewWindowOpened);
+			selectedTasks.clear();
 			auto &tasks = spellCard.getTasks();
-			Tasks operandTasks;
-			operandTasks.reserve(2);
 			for (size_t i = 0; i < tasks.size(); ++i) {
-				char title[20];
-				char popupId[20];
-				char changeImageButton[20];
-				char closeButton[20];
-				char duplicateButton[20];
+				char title[TITLE_BUFFER_SIZE];
+				char popupId[TITLE_BUFFER_SIZE];
+				char changeImageButton[TITLE_BUFFER_SIZE];
+				char closeButton[TITLE_BUFFER_SIZE];
+				char duplicateButton[TITLE_BUFFER_SIZE];
 				ImFormatString(title, IM_ARRAYSIZE(title), "Task %i", i);
 				ImFormatString(popupId, IM_ARRAYSIZE(popupId), "Popup %i", i);
 				ImFormatString(changeImageButton, IM_ARRAYSIZE(changeImageButton),
@@ -290,16 +295,16 @@ int main(int argc, const char *argv[]) {
 					if (ImGui::Button(duplicateButton)) tasks.emplace_back(task->clone());
 					ImGui::EndPopup();
 				}
-				if (operandTasks.size() < 2 && task->isSelected)
-					operandTasks.push_back(task);
+				if (task->isSelected)
+					selectedTasks.push_back(task);
 			}
 			if (ImGui::Button("Add New")) {
 				auto task = make_shared<LinearTask>();
 				task->image = imageSet[1][1];
 				tasks.emplace_back(task);
 			}
-			if (operandTasks.size() >= 2 && ImGui::CollapsingHeader("Operations")) {
-				AbstractTask *lhs = operandTasks[0].get(), *rhs = operandTasks[1].get();
+			if (selectedTasks.size() == 2 && ImGui::CollapsingHeader("Operations")) {
+				AbstractTask *lhs = selectedTasks[0].get(), *rhs = selectedTasks[1].get();
 				lhs->extension(rhs, tasks);
 			}
 			ImGui::End();
