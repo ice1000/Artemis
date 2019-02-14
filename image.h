@@ -51,7 +51,8 @@ public:
 	ImVec2 fullSize() const;
 	void draw(const ImVec2 &scale = ImVec2(1, 1));
 	bool drawButton(const ImVec2 &scale = ImVec2(1, 1));
-	void drawWithBoarder(const ImVec2 &scale = ImVec2(1, 1));
+	void drawWithBoarder(const ImVec2 &scale = ImVec2(1, 1),
+	                     const ImVec4 &border_col = ImVec4(1, 0, 0, 1));
 	void write(FILE *file);
 	void read(FILE *file, CompleteImage *complete);
 };

@@ -48,8 +48,10 @@ void LinearTask::drawWithoutRotate(double time) {
 	if (time > endTime() || time < startTime) return;
 	auto percentage = static_cast<float>((time - startTime) / stayTime);
 	const ImVec2 &scale = (endScale - startScale) * percentage + startScale;
-	if (isSelected) image.drawWithBoarder(scale);
+	if (isSelected) image.drawWithBoarder(scale, ImVec4(1, 0, 0, 1));
+	else if (isHovered) image.drawWithBoarder(scale, ImVec4(.9f, 0, 0, .7f));
 	else image.draw(scale);
+	isHovered = ImGui::IsItemHovered();
 }
 
 double LinearTask::endTime() const {
@@ -224,5 +226,4 @@ void AbstractTask::draw(double time) {
 
 void AbstractTask::drawOthers() {}
 
-void AbstractTask::extension(AbstractTask *other,
-                             vector<shared_ptr<AbstractTask>> &tasks) {}
+void AbstractTask::extension(AbstractTask *other, Tasks &tasks) {}

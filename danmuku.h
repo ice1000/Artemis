@@ -26,10 +26,12 @@ using Tasks = vector<shared_ptr<AbstractTask>>;
 class AbstractTask : public Clone<AbstractTask> {
 private:
 public:
-	virtual ~AbstractTask() = default;
+	~AbstractTask() override = default;
 
 	SubImage image;
+
 	bool isSelected = false;
+	bool isHovered = false;
 	bool isRightClicked = false;
 
 	virtual void draw(double time);

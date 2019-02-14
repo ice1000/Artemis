@@ -25,10 +25,10 @@ bool SubImage::drawButton(const ImVec2 &scale) {
 	                          uv1());
 }
 
-void SubImage::drawWithBoarder(const ImVec2 &scale) {
+void SubImage::drawWithBoarder(const ImVec2 &scale, const ImVec4 &border_col) {
 	ImGui::Image(completeImage->textureID, size * scale, uv0(), uv1(),
 	             ImVec4(2, 2, 2, 2),
-	             ImVec4(1, 0, 0, 1));
+	             border_col);
 }
 
 SubImage::SubImage(const CompleteImage *completeImage) : completeImage(
