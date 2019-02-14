@@ -44,13 +44,8 @@ Tasks &SpellCard::getTasks() {
 	return tasks;
 }
 
-void LinearTask::drawWithoutRotate(double time) {
-	auto percentage = static_cast<float>((time - startTime) / stayTime);
-	const ImVec2 &scale = (endScale - startScale) * percentage + startScale;
-	if (isSelected) image.drawWithBoarder(scale, ImVec4(1, 0, 0, 1));
-	else if (isHovered) image.drawWithBoarder(scale, ImVec4(.8f, .1f, .1f, .6f));
-	else image.draw(scale);
-	isHovered = ImGui::IsItemHovered();
+float AbstractTask::percentage(double time) const {
+	return static_cast<float>((time - startTime) / stayTime);
 }
 
 double AbstractTask::endTime() const {
@@ -58,7 +53,7 @@ double AbstractTask::endTime() const {
 }
 
 void LinearTask::editor() {
-	ImGui::Checkbox("Show Path", &showPath);
+	AbstractTask::editor();
 	bool sync = ImGui::GetIO().KeyAlt;
 	if (ImGui::CollapsingHeader("Positioning")) {
 		if (ImGui::Button("Mouse ...##StartPos")) pendingClick = &startPos;
@@ -81,28 +76,6 @@ void LinearTask::editor() {
 			if (sync && endPos.y != originalEnd.y)
 				startPos.y += endPos.y - originalEnd.y;
 		}
-	}
-	if (ImGui::CollapsingHeader("Scaling")) {
-		if (ImGui::Button("Reset##StartScale")) startScale = ImVec2(1, 1);
-		ImGui::SameLine();
-		ImVec2 originalStart = startScale;
-		if (ImGui::SliderFloat2("Start##Scale",
-		                        reinterpret_cast<float *>(&startScale), -5, 5)) {
-			if (sync && startScale.x != originalStart.x) endScale.x = startScale.x;
-			if (sync && startScale.y != originalStart.y) endScale.y = startScale.y;
-		}
-		if (ImGui::Button("Reset##EndScale")) endScale = ImVec2(1, 1);
-		ImGui::SameLine();
-		ImVec2 originalEnd = endScale;
-		if (ImGui::SliderFloat2("End##Scale", reinterpret_cast<float *>(&endScale),
-		                        -5, 5)) {
-			if (sync && endScale.x != originalEnd.x) startScale.x = endScale.x;
-			if (sync && endScale.y != originalEnd.y) startScale.y = endScale.y;
-		}
-	}
-	if (ImGui::CollapsingHeader("Timing")) {
-		ImGui::SliderDouble("Task Start Time", &startTime, 0, 5);
-		ImGui::SliderDouble("Task Stay Time", &stayTime, 0, 5);
 	}
 }
 
@@ -128,9 +101,8 @@ TaskType LinearTask::type() {
 	return Linear;
 }
 
-ImVec2 LinearTask::calcPos(double time) {
-	auto percentage = static_cast<float>((time - startTime) / stayTime);
-	return (endPos - startPos) * percentage + startPos;
+ImVec2 LinearTask::calcPos(float percent) {
+	return (endPos - startPos) * percent + startPos;
 }
 
 void LinearTask::drawOtherMisc() {
@@ -192,13 +164,40 @@ shared_ptr<AbstractTask> AbstractTask::create(FILE *file) {
 	switch (taskType) {
 		case Linear:
 			return make_shared<LinearTask>();
+		case Circular:
+			return make_shared<CircularTask>();
 		default:
 			fprintf(stderr, "Unrecognized task type: %i", taskType);
 			exit(-1);
 	}
 }
 
-void AbstractTask::editor() {}
+void AbstractTask::editor() {
+	ImGui::Checkbox("Show Path", &showPath);
+	bool sync = ImGui::GetIO().KeyAlt;
+	if (ImGui::CollapsingHeader("Scaling")) {
+		if (ImGui::Button("Reset##StartScale")) startScale = ImVec2(1, 1);
+		ImGui::SameLine();
+		ImVec2 originalStart = startScale;
+		if (ImGui::SliderFloat2("Start##Scale",
+		                        reinterpret_cast<float *>(&startScale), -5, 5)) {
+			if (sync && startScale.x != originalStart.x) endScale.x = startScale.x;
+			if (sync && startScale.y != originalStart.y) endScale.y = startScale.y;
+		}
+		if (ImGui::Button("Reset##EndScale")) endScale = ImVec2(1, 1);
+		ImGui::SameLine();
+		ImVec2 originalEnd = endScale;
+		if (ImGui::SliderFloat2("End##Scale", reinterpret_cast<float *>(&endScale),
+		                        -5, 5)) {
+			if (sync && endScale.x != originalEnd.x) startScale.x = endScale.x;
+			if (sync && endScale.y != originalEnd.y) startScale.y = endScale.y;
+		}
+	}
+	if (ImGui::CollapsingHeader("Timing")) {
+		ImGui::SliderDouble("Task Start Time", &startTime, 0, 5);
+		ImGui::SliderDouble("Task Stay Time", &stayTime, 0, 5);
+	}
+}
 
 void AbstractTask::drawMisc() {
 	drawOtherMisc();
@@ -211,11 +210,16 @@ void AbstractTask::drawMisc() {
 void AbstractTask::draw(double time) {
 	if (time > endTime() || time < startTime) return;
 	auto rotation_start_index = ImGui::BeginRotate();
-	const ImVec2 &currentPos = calcPos(time);
-	const ImVec2 &previousPos = calcPos(time - 0.0001);
+	auto percent = percentage(time);
+	const ImVec2 &currentPos = calcPos(percent);
+	const ImVec2 &previousPos = calcPos(percent - 0.001);
 	ImGui::SetCursorPos(currentPos);
 	const ImVec2 &dir = currentPos - previousPos;
-	drawWithoutRotate(time);
+	const ImVec2 &scale = (endScale - startScale) * percent + startScale;
+	if (isSelected) image.drawWithBoarder(scale, ImVec4(1, 0, 0, 1));
+	else if (isHovered) image.drawWithBoarder(scale, ImVec4(.8f, .1f, .1f, .6f));
+	else image.draw(scale);
+	isHovered = ImGui::IsItemHovered();
 	float rotation = atan(-dir.y / dir.x);
 	if (dir.x < 0) rotation += IM_PI;
 	ImGui::EndRotate(rotation, rotation_start_index);
@@ -224,3 +228,40 @@ void AbstractTask::draw(double time) {
 void AbstractTask::drawOtherMisc() {}
 
 void AbstractTask::extension(AbstractTask *, Tasks &) {}
+
+TaskType CircularTask::type() {
+	return Circular;
+}
+
+double CircularTask::endTheta() const {
+	return startTheta + increasingTheta;
+}
+
+void CircularTask::write(FILE *file) {
+	image.write(file);
+	fprintf(file, "%lf,%lf,%f,%f,", startTime, stayTime, startTheta,
+	        increasingTheta);
+	fprintf(file, "%f,%f,%f,", centerPos.x, centerPos.y, radius);
+	fputs("", file);
+	fflush(file);
+}
+
+void CircularTask::read(FILE *file, CompleteImage *complete) {
+	image.read(file, complete);
+	FSCANF(file, "%lf,%lf,%f,%f,", &startTime, &stayTime, &startTheta,
+	       &increasingTheta);
+	FSCANF(file, "%f,%f,%f,", &centerPos.x, &centerPos.y, &radius);
+}
+
+ImVec2 CircularTask::calcPos(float percent) {
+	auto theta = startTheta + increasingTheta * percent;
+	return ImVec2(ImSin(theta), ImCos(theta)) * radius + centerPos;
+}
+
+void CircularTask::editor() {
+	AbstractTask::editor();
+	ImGui::SliderFloat2("Center", reinterpret_cast<float *>(&centerPos),
+	                    -1e3, 1e3);
+	ImGui::SliderFloat("Radius", &radius, .0f, 300.0f);
+}
+

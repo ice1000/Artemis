@@ -196,7 +196,7 @@ int main(int argc, const char *argv[]) {
 	}
 
 	double startTime = ImGui::GetTime();
-	double fixedTime = -1;
+	double fixedTime = -.2;
 	double currentTime = startTime;
 	char debugWindowTitle[100];
 	bool previewWindowOpened = false;
@@ -248,7 +248,7 @@ int main(int argc, const char *argv[]) {
 			}
 			if (ImGui::Button("Play")) {
 				startTime = ImGui::GetTime();
-				fixedTime = -1;
+				fixedTime = -.2;
 			}
 			ImGui::SameLine();
 			ImGui::Checkbox("Open Image Preview", &previewWindowOpened);
@@ -305,7 +305,7 @@ int main(int argc, const char *argv[]) {
 				}
 			}
 			if (ImGui::Button("Add New")) {
-				auto task = make_shared<LinearTask>();
+				auto task = make_shared<CircularTask>();
 				task->image = imageSet[1][1];
 				tasks.emplace_back(task);
 			}
