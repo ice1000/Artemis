@@ -5,7 +5,7 @@
 #include "danmuku.h"
 
 void SpellCard::draw(double time) {
-	for (auto &task : tasks) task->drawOthers();
+	for (auto &task : tasks) task->drawMisc();
 	AbstractTask *selected = nullptr;
 	// Explicit typed to make CLion happy
 	for (shared_ptr<AbstractTask> &task : tasks) {
@@ -45,7 +45,6 @@ Tasks &SpellCard::getTasks() {
 }
 
 void LinearTask::drawWithoutRotate(double time) {
-	if (time > endTime() || time < startTime) return;
 	auto percentage = static_cast<float>((time - startTime) / stayTime);
 	const ImVec2 &scale = (endScale - startScale) * percentage + startScale;
 	if (isSelected) image.drawWithBoarder(scale, ImVec4(1, 0, 0, 1));
@@ -54,7 +53,7 @@ void LinearTask::drawWithoutRotate(double time) {
 	isHovered = ImGui::IsItemHovered();
 }
 
-double LinearTask::endTime() const {
+double AbstractTask::endTime() const {
 	return startTime + stayTime;
 }
 
@@ -134,7 +133,7 @@ ImVec2 LinearTask::calcPos(double time) {
 	return (endPos - startPos) * percentage + startPos;
 }
 
-void LinearTask::drawOthers() {
+void LinearTask::drawOtherMisc() {
 	if (showPath) {
 		ImGui::SetCursorPos({});
 		ImVec2 &&delta = endPos - startPos;
@@ -143,10 +142,6 @@ void LinearTask::drawOthers() {
 		float thickness = isSelected ? 2 : .5f;
 		ImGui::Line(offset + (image.size * startScale) / 2, delta,
 		            ImVec4(1, 0, 0, alpha), thickness);
-	}
-	if (pendingClick) {
-		*pendingClick = ImGui::GetIO().MousePos - ImGui::GetCurrentWindow()->Pos;
-		if (ImGui::IsMouseDoubleClicked(0)) pendingClick = nullptr;
 	}
 }
 
@@ -203,7 +198,18 @@ shared_ptr<AbstractTask> AbstractTask::create(FILE *file) {
 	}
 }
 
+void AbstractTask::editor() {}
+
+void AbstractTask::drawMisc() {
+	drawOtherMisc();
+	if (pendingClick) {
+		*pendingClick = ImGui::GetIO().MousePos - ImGui::GetCurrentWindow()->Pos;
+		if (ImGui::IsMouseDoubleClicked(0)) pendingClick = nullptr;
+	}
+}
+
 void AbstractTask::draw(double time) {
+	if (time > endTime() || time < startTime) return;
 	auto rotation_start_index = ImGui::BeginRotate();
 	const ImVec2 &currentPos = calcPos(time);
 	const ImVec2 &previousPos = calcPos(time - 0.0001);
@@ -215,6 +221,6 @@ void AbstractTask::draw(double time) {
 	ImGui::EndRotate(rotation, rotation_start_index);
 }
 
-void AbstractTask::drawOthers() {}
+void AbstractTask::drawOtherMisc() {}
 
 void AbstractTask::extension(AbstractTask *, Tasks &) {}

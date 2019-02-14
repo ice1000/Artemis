@@ -47,6 +47,8 @@ void SubImage::read(FILE *file, CompleteImage *complete) {
 	FSCANF(file, "%f,%f,", &size.x, &size.y);
 }
 
+SubImage::SubImage() : completeImage(nullptr) {}
+
 bool CompleteImage::fromFile(const char *fileName, CompleteImage &subimage) {
 	ImTextureID t;
 	size_t w, h;

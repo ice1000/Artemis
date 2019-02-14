@@ -23,7 +23,7 @@ namespace ImGui {
 	void LineFromTo(const ImVec2 &from, const ImVec2 &to, float thickness,
 	                const ImVec4 &color);
 	void Line(const ImVec2 &delta, const ImVec4 &color, float thickness);
-	void Line(const ImVec2 &delta, const float thickness);
+	void Line(const ImVec2 &delta, float thickness);
 	bool SliderDouble(const char *label, double *v, double v_min, double v_max,
 	                  const char *format = "%.6lf", double power = 1.0);
 	ImVec2 RotationCenter(size_t rotation_start_index);
@@ -44,7 +44,7 @@ public:
 	ImVec2 pos;
 
 	explicit SubImage(const CompleteImage *completeImage);
-	explicit SubImage() = default;
+	explicit SubImage();
 
 	ImVec2 uv0() const;
 	ImVec2 uv1() const;
@@ -59,7 +59,7 @@ public:
 
 class CompleteImage {
 public:
-	ImTextureID textureID;
+	ImTextureID textureID = nullptr;
 	ImVec2 fullSize;
 
 	static bool fromFile(const char *fileName, CompleteImage &subimage);
