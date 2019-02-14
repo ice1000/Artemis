@@ -255,6 +255,7 @@ int main(int argc, const char *argv[]) {
 			selectedTasks.clear();
 			auto &tasks = spellCard.getTasks();
 			for (size_t i = 0; i < tasks.size(); ++i) {
+				bool deleted = false;
 				char title[TITLE_BUFFER_SIZE];
 				char popupId[TITLE_BUFFER_SIZE];
 				char changeImageButton[TITLE_BUFFER_SIZE];
@@ -289,23 +290,30 @@ int main(int argc, const char *argv[]) {
 					}
 					if (ImGui::Button(closeButton)) {
 						ImGui::CloseCurrentPopup();
-						tasks.erase(tasks.begin() + i);
+						tasks.erase(tasks.begin() + i--);
+						deleted = true;
 					}
 					ImGui::SameLine();
 					if (ImGui::Button(duplicateButton)) tasks.emplace_back(task->clone());
 					ImGui::EndPopup();
 				}
-				if (task->isSelected)
-					selectedTasks.push_back(task);
+				if (task->isSelected) {
+					if (!deleted &&
+					    ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)))
+						tasks.erase(tasks.begin() + i--);
+					else selectedTasks.push_back(task);
+				}
 			}
 			if (ImGui::Button("Add New")) {
 				auto task = make_shared<LinearTask>();
 				task->image = imageSet[1][1];
 				tasks.emplace_back(task);
 			}
-			if (selectedTasks.size() == 2 && ImGui::CollapsingHeader("Operations")) {
-				AbstractTask *lhs = selectedTasks[0].get(), *rhs = selectedTasks[1].get();
+			if (selectedTasks.size() == 2 && ImGui::Begin("Operations")) {
+				auto *lhs = selectedTasks[0].get();
+				auto *rhs = selectedTasks[1].get();
 				lhs->extension(rhs, tasks);
+				ImGui::End();
 			}
 			ImGui::End();
 		}

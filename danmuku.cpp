@@ -150,7 +150,7 @@ void LinearTask::drawOthers() {
 	}
 }
 
-#define INIT_L_R(Base, op) { \
+#define INIT_L_R(Base, Ext, op) { \
 LinearTask *l, *r; \
 if (startPos.x > other->startPos.x) { \
   l = other; \
@@ -166,7 +166,7 @@ task->endPos = (Base)->endPos op (r->endPos - l->endPos); \
 task->startScale = (Base)->startScale op (r->startScale - l->startScale); \
 task->endScale = (Base)->endScale op (r->endScale - l->endScale); \
 tasks.emplace_back(task); \
-(Base)->isSelected = false; \
+(Ext)->isSelected = false; \
 task->isSelected = true; \
 }
 
@@ -183,8 +183,8 @@ void LinearTask::extension(AbstractTask *absOther, Tasks &tasks) {
 			task->endScale = (endScale + other->endScale) / 2;
 			tasks.emplace_back(task);
 		}
-		if (ImGui::Button("Left (Start Pos)")) INIT_L_R(r, +)
-		if (ImGui::Button("Right (Start Pos)")) INIT_L_R(r, +)
+		if (ImGui::Button("Left (Start Pos)")) INIT_L_R(l, r, -)
+		if (ImGui::Button("Right (Start Pos)")) INIT_L_R(r, l, +)
 		ImGui::TreePop();
 	}
 }
