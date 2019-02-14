@@ -81,7 +81,7 @@ public:
 	ImVec2 calcPos(float percent) override;
 
 	// void extension(AbstractTask *other, Tasks &tasks) override;
-	// void drawOtherMisc() override;
+	void drawOtherMisc() override;
 	void editor() override;
 	void write(FILE *file) override;
 	void read(FILE *file, CompleteImage *complete) override;

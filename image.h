@@ -25,10 +25,15 @@ namespace ImGui {
 	void Line(const ImVec2 &delta, const ImVec4 &color, float thickness);
 	void Line(const ImVec2 &delta, float thickness);
 	bool SliderDouble(const char *label, double *v, double v_min, double v_max,
-	                  const char *format = "%.6lf", double power = 1.0);
+	                  const char *format = "%.6lf", float power = 1.0f);
 	ImVec2 RotationCenter(size_t rotation_start_index);
 	void EndRotate(float rad, size_t rotation_start_index);
 	void EndRotate(float rad, size_t rotation_start_index, ImVec2 center);
+
+	/// if @param thickness < 0, circle will be filled
+	void Circle(const ImVec2 &center, float radius, const ImVec4 &color, int num_segments = 12, float thickness = 1.0f);
+	/// if @param thickness < 0, circle will be filled
+	void Circle(const ImVec2 &center, float radius, int num_segments = 12, float thickness = 1.0f);
 
 	inline auto
 	BeginRotate() noexcept { return ImGui::GetWindowDrawList()->VtxBuffer.Size; }

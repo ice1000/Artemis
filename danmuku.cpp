@@ -106,15 +106,12 @@ ImVec2 LinearTask::calcPos(float percent) {
 }
 
 void LinearTask::drawOtherMisc() {
-	if (showPath) {
-		ImGui::SetCursorPos({});
-		ImVec2 &&delta = endPos - startPos;
-		ImVec2 offset = startPos;
-		float alpha = isSelected ? 1 : .7f;
-		float thickness = isSelected ? 2 : .5f;
-		ImGui::Line(offset + (image.size * startScale) / 2, delta,
-		            ImVec4(1, 0, 0, alpha), thickness);
-	}
+	ImVec2 &&delta = endPos - startPos;
+	ImVec2 offset = startPos;
+	float alpha = isSelected ? 1 : .7f;
+	float thickness = isSelected ? 2 : .5f;
+	ImGui::Line(offset + (image.size * startScale) / 2, delta,
+	            ImVec4(1, 0, 0, alpha), thickness);
 }
 
 #define INIT_L_R(Base, Ext, op) { \
@@ -200,7 +197,7 @@ void AbstractTask::editor() {
 }
 
 void AbstractTask::drawMisc() {
-	drawOtherMisc();
+	if (showPath) drawOtherMisc();
 	if (pendingClick) {
 		*pendingClick = ImGui::GetIO().MousePos - ImGui::GetCurrentWindow()->Pos;
 		if (ImGui::IsMouseDoubleClicked(0)) pendingClick = nullptr;
@@ -258,10 +255,17 @@ ImVec2 CircularTask::calcPos(float percent) {
 	return ImVec2(ImSin(theta), ImCos(theta)) * radius + centerPos;
 }
 
+void CircularTask::drawOtherMisc() {
+	float alpha = isSelected ? 1 : .7f;
+	float thickness = isSelected ? 1.2f : .5f;
+	ImVec2 center = centerPos;
+	center.y -= image.size.y;
+	ImGui::Circle(center, radius, ImVec4(1, 0, 0, alpha), static_cast<int>(radius * IM_PI / 2), thickness);
+}
+
 void CircularTask::editor() {
 	AbstractTask::editor();
 	ImGui::SliderFloat2("Center", reinterpret_cast<float *>(&centerPos),
 	                    -1e3, 1e3);
 	ImGui::SliderFloat("Radius", &radius, .0f, 300.0f);
 }
-

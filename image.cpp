@@ -82,9 +82,8 @@ void ImGui::Line(const ImVec2 &delta, const float thickness) {
 	Line(delta, ImGui::GetStyle().Colors[ImGuiCol_PlotLines], thickness);
 }
 
-bool
-ImGui::SliderDouble(const char *label, double *v, double v_min, double v_max,
-                    const char *format, double power) {
+bool ImGui::SliderDouble(const char *label, double *v, double v_min,
+                         double v_max, const char *format, float power) {
 	return SliderScalar(label, ImGuiDataType_Double, v, &v_min, &v_max, format,
 	                    power);
 }
@@ -110,4 +109,23 @@ void ImGui::EndRotate(float rad, size_t rotation_start_index, ImVec2 center) {
 	auto &buf = ImGui::GetWindowDrawList()->VtxBuffer;
 	for (int i = rotation_start_index; i < buf.Size; i++)
 		buf[i].pos = ImRotate(buf[i].pos, s, c) - center;
+}
+
+void ImGui::Circle(const ImVec2 &center, float radius, const ImVec4 &color, const int num_segments, const float thickness) {
+	ImGuiWindow *window = GImGui->CurrentWindow;
+	if (window->SkipItems) return;
+	const ImVec2 &cursorPos = window->DC.CursorPos;
+	const ImVec2 &realCenter = center + cursorPos;
+	ImVec2 leftBottom = ImVec2(realCenter.x - radius, realCenter.y - radius);
+	ImVec2 rightTop = ImVec2(realCenter.x + radius, realCenter.y + radius);
+	ImRect bb{leftBottom, rightTop};
+	// ItemSize(bb);
+	if (!ItemAdd(bb, 0)) return;
+	if (thickness >= 0)
+		window->DrawList->AddCircle(realCenter, radius, GetColorU32(color), num_segments, thickness);
+	else window->DrawList->AddCircleFilled(realCenter, radius, GetColorU32(color), num_segments);
+}
+
+void ImGui::Circle(const ImVec2 &center, float radius, const int num_segments, const float thickness) {
+	Circle(center, radius, ImGui::GetStyle().Colors[ImGuiCol_Button], num_segments, thickness);
 }
