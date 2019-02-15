@@ -106,6 +106,7 @@ ImVec2 LinearTask::calcPos(float percent) {
 }
 
 void LinearTask::drawOtherMisc() {
+	ImGui::SetCursorPos({});
 	ImVec2 &&delta = endPos - startPos;
 	ImVec2 offset = startPos;
 	float alpha = isSelected ? 1 : .7f;
